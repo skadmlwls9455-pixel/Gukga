@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>백야선</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 상단 고정 계기판(수치는 여기서만 보인다) + 한 번에 한 가지 질문만 하는 카드. 단일 테마(극야). */
+:root {
+  --night: #0b1016;
+  --slab: #131b24;
+  --slab-2: #1b2632;
+  --line: #2a3644;
+  --frost: #e4ebf1;
+  --dim: #8c9aa8;
+  --heat: #f0a04b;
+  --supply: #9cc3a0;
+  --squad: #9db8de;
+  --track: #e2624f;
+  --display: "Nanum Myeongjo", "Noto Serif KR", serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--night); color: var(--frost); font: 16px/1.7 var(--body); min-height: 100%; }
+.wrap { max-width: 620px; margin: 0 auto; padding-inline: 16px; padding-block: 0 56px; }
+
+/* 계기판 */
+.hud {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--night) 94%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+  margin-inline: -16px; padding: 10px 16px 12px;
+}
+.hud-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.hud-title { font-family: var(--display); font-weight: 800; font-size: 16px; letter-spacing: .04em; }
+.hud-step { font-size: 12px; color: var(--dim); }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.tile { position: relative; min-width: 0; border-radius: 6px; padding: 6px 8px 8px; background: var(--slab); border: 1px solid transparent; transition: border-color .2s; }
+.tile.focus { border-color: var(--c); animation: pulse 1.6s ease-in-out 2; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 35%, transparent); } }
+.t-name { font-size: 12px; color: var(--dim); }
+.t-num { font-family: var(--mono); font-size: 20px; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t-num .to { color: var(--c); }
+.t-word { font-size: 12px; color: var(--c); margin-left: 4px; font-family: var(--body); }
+.bar { display: flex; gap: 2px; height: 6px; margin-top: 4px; }
+.cell { flex: 1; background: var(--line); border-radius: 1px; }
+.cell.on { background: var(--c); }
+.cell.lose { background: repeating-linear-gradient(135deg, var(--c) 0 2px, transparent 2px 4px); opacity: .8; }
+.cell.gain { box-shadow: inset 0 0 0 1px var(--c); }
+.t-H { --c: var(--heat); } .t-S { --c: var(--supply); } .t-R { --c: var(--squad); } .t-P { --c: var(--track); }
+.delta {
+  position: absolute; right: 6px; top: 4px; font-family: var(--mono); font-size: 14px; color: var(--c);
+  animation: float 1.8s ease-out forwards; pointer-events: none;
+}
+@keyframes float { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+@media (max-width: 380px) { .t-word { display: none; } }
+
+/* 카드 */
+.card { margin-top: 24px; animation: rise .3s ease-out; }
+@keyframes rise { from { transform: translateY(6px); opacity: .5; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .card, .tile.focus, .delta { animation: none; } }
+.eyebrow { font-size: 13px; color: var(--dim); }
+h1, h2 { font-family: var(--display); font-weight: 800; text-wrap: balance; margin: 2px 0 14px; line-height: 1.3; }
+h1 { font-size: clamp(44px, 12vw, 68px); letter-spacing: .02em; }
+h2 { font-size: 26px; }
+.prose p { margin: 0 0 10px; max-width: 60ch; }
+.say { padding-left: 12px; border-left: 2px solid var(--line); }
+
+.tip {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: color-mix(in srgb, var(--squad) 10%, var(--slab)); border-radius: 6px;
+  padding: 10px 12px; margin: 16px 0 4px; font-size: 14px; line-height: 1.6;
+}
+.tip-mark { flex: none; font-family: var(--mono); font-size: 12px; color: var(--night); background: var(--squad); border-radius: 3px; padding: 0 6px; margin-top: 2px; }
+.tip-body { min-width: 0; }
+.tip b { font-weight: 600; }
+
+.q { font-weight: 600; margin: 22px 0 10px; }
+.q small { font-weight: 400; color: var(--dim); margin-left: 6px; }
+.opts { display: grid; gap: 8px; }
+.opt {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  background: var(--slab); color: var(--frost); font: inherit;
+  border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px;
+}
+.opt:hover:not(:disabled) { border-color: var(--dim); }
+.opt:focus-visible, .btn:focus-visible, .link:focus-visible { outline: 2px solid var(--squad); outline-offset: 2px; }
+.opt[aria-pressed="true"] { background: var(--slab-2); border-color: var(--frost); }
+.opt:disabled { opacity: .4; cursor: not-allowed; }
+.opt-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }
+.opt-name { font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-size: 13px; border-radius: 999px; padding: 0 8px; line-height: 22px; background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); white-space: nowrap; }
+.chip.free { --c: var(--dim); }
+.chip.k-H { --c: var(--heat); } .chip.k-S { --c: var(--supply); } .chip.k-R { --c: var(--squad); } .chip.k-P { --c: var(--track); }
+.opt-note { font-size: 14px; color: var(--dim); margin-top: 4px; }
+.opt-warn { font-size: 14px; color: var(--track); margin-top: 4px; }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; }
+.btn {
+  font: 600 15px var(--body); cursor: pointer; border-radius: 6px; padding: 10px 20px;
+  background: var(--frost); color: var(--night); border: 1px solid var(--frost);
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--frost); border-color: var(--line); }
+.btn.danger { background: var(--track); border-color: var(--track); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.link { background: none; border: 0; color: var(--dim); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; padding: 0; }
+.picked { font-size: 14px; color: var(--dim); margin-top: 18px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.alert { color: var(--track); }
+
+.outcome { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
+.toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dim); margin-top: 14px; }
+.toggle input { accent-color: var(--squad); width: 18px; height: 18px; }
+
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 15px; margin: 10px 0 0; }
+.facts dt { color: var(--dim); }
+.facts dd { margin: 0; }
+details { margin-top: 18px; }
+summary { cursor: pointer; color: var(--dim); font-size: 14px; }
+.log-wrap { overflow-x: auto; margin-top: 8px; }
+table.log { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+table.log th, table.log td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.log th:first-child, table.log td:first-child { text-align: left; white-space: normal; min-width: 12ch; }
+table.log th { color: var(--dim); font-weight: 500; }
+table.log td { font-family: var(--mono); }
+table.log td:first-child { font-family: var(--body); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hud" id="hud" hidden>
+    <div class="hud-top"><span class="hud-title">백야선</span><span class="hud-step" id="hud-step"></span></div>
+    <div class="tiles" id="tiles"></div>
+  </header>
+  <main id="main"></main>
+</div>
+<script>
+"use strict";
+const MAX = { H: 12, S: 8, R: 6, P: 3 };
+const NAME = { H: "열", S: "보급", R: "분대", P: "추적" };
+const P_WORD = ["안전", "은폐", "경계", "추격"];
+const clamp = (k, v) => Math.max(0, Math.min(MAX[k], v));
+const main = document.getElementById("main");
+
+let st;
+function fresh(tutorial = true) {
+  return {
+    step: "title", tutorial, H: 8, S: 4, R: 6, P: 0,
+    gear: null, cargo: null, c1: null, doyun: "정상",
+    phase: null, heat: null, pick: null, story: null,
+    collapsed: false, tempBattery: false, chaseP: 0,
+    night: null, medic: false, doyunTreated: false,
+    retDone: false, prepDone: false, flash: null, log: []
+  };
+}
+
+/* ---------- 수치 ---------- */
+function apply(effects) {
+  const delta = {};
+  for (const e of effects) {
+    const before = st[e.k];
+    st[e.k] = e.set !== undefined ? clamp(e.k, e.set) : clamp(e.k, before + e.d);
+    delta[e.k] = (delta[e.k] || 0) + st[e.k] - before;
+  }
+  return delta;
+}
+function flash(delta) {
+  st.flash = st.flash || {};
+  for (const k in delta) st.flash[k] = (st.flash[k] || 0) + delta[k];
+}
+function costOf(effects, k) { return effects.filter(e => e.k === k && e.d < 0).reduce((a, e) => a - e.d, 0); }
+function affordable(effects) { return costOf(effects, "H") <= st.H && costOf(effects, "S") <= st.S; }
+// 실제 적용과 같은 순서·상하한으로 결과를 미리 계산
+function simulate(heat, cmd) {
+  const saved = { H: st.H, S: st.S, R: st.R, P: st.P };
+  apply(heat);
+  if (st.R > 0) { apply(cmd.filter(e => !e.reward)); if (st.R > 0) apply(cmd.filter(e => e.reward)); }
+  const res = { H: st.H, S: st.S, R: st.R, P: st.P };
+  Object.assign(st, saved);
+  return res;
+}
+function chips(effects) {
+  const list = effects.filter(e => e.set !== undefined || e.d !== 0);
+  if (!list.length) return '<span class="chip free">비용 없음</span>';
+  return list.map(e => {
+    const v = e.set !== undefined ? `→ ${e.set}` : (e.d > 0 ? "+" + e.d : "−" + (-e.d));
+    return `<span class="chip k-${e.k}">${NAME[e.k]} ${v}</span>`;
+  }).join("");
+}
+
+/* ---------- 카드 데이터 ---------- */
+const HEAT_NAME = { off: "난방 끄기", low: "약하게", high: "세게" };
+const CARDS = {
+  2: {
+    title: "눈 밑의 움직임", place: "외곽 설원",
+    heats: ["off", "low"], coverWorks: true,
+    text: [
+      "중계소로 가는 설원. 발밑의 눈이 일정한 간격으로 꺼진다. 아래에서 무언가 따라온다.",
+      "<span class=\"say\">해원: \"설피야. 발소리를 따라와. 조용히 가든지, 딴 데로 돌리든지.\"</span>"
+    ],
+    cmds: [
+      { id: "slow", name: "눈길을 천천히 건넌다", note: "다리가 먼저 지친다.",
+        fx: () => [{ k: "R", d: -1 }] },
+      { id: "noise", name: "소음 미끼를 던진다", note: "설피를 소리 쪽으로 돌려 추적을 줄인다.",
+        fx: () => [{ k: "S", d: -1 }, { k: "P", d: -1 }] }
+    ],
+    story: { slow: "한 걸음씩 무게를 나눠 디딘다. 다리가 먼저 얼어붙는다. 진동은 멀어지지 않는다.",
+      noise: "미끼가 멀리서 덜컹거린다. 발밑의 꺼짐이 그쪽으로 옮겨 간다." }
+  },
+  3: {
+    title: "중계소 문", place: "난방 중계소 정문",
+    heats: ["off", "low", "high"], coverWorks: true, highNote: "몸이 데워져 직접 떼어낼 때 덜 다친다.",
+    text: [
+      "중계소 정문에 등화가 붙어 있다. 몸 안쪽이 희미하게 빛나며 문에 남은 열을 빨아들인다.",
+      "<span class=\"say\">서린: \"저건 뜨거운 쪽으로 움직여. 시간 없어. 정해.\"</span>"
+    ],
+    cmds: [
+      { id: "pull", name: "직접 떼어낸다", note: "몸으로 해결한다. 세게 켰다면 덜 다친다.",
+        fx: h => [{ k: "R", d: h === "high" ? -1 : -2 }, { k: "P", d: 1 }] },
+      { id: "lure", name: "열 미끼로 끌어낸다", needs: "decoy", note: "전지를 태워 등화를 멀리 보낸다.",
+        fx: () => [{ k: "H", d: -2 }, { k: "P", d: -2 }] },
+      { id: "shoot", name: "사격으로 떨어뜨린다", note: "총성이 멀리 간다.",
+        fx: () => [{ k: "S", d: -2 }, { k: "P", d: 1 }] }
+    ],
+    story: { pull: "도윤과 둘이 등화를 문틀에서 뜯어낸다. 빛이 꺼질 때까지 손이 떨린다.",
+      lure: "미끼가 달아오르자 등화가 문을 놓고 미끼 쪽으로 기어간다. 그만큼 전지가 빈다.",
+      shoot: "세 발 만에 떨어진다. 총성이 설원 멀리까지 간다." }
+  },
+  4: {
+    title: "한 자리", place: "중계소 내부",
+    heats: ["off", "low", "high"], coverWorks: false, highNote: "짐을 옮길 때 다치지 않는다.",
+    text: [
+      "전지 상자 옆에 정비복 차림의 작업자가 웅크려 있다. 운반 장치 연결부가 부러져 <b>한 자리만</b> 남았다.",
+      "<span class=\"say\">작업자: \"중계소는 내가 고칠 수 있어요. 공구만 찾으면요.\"</span>"
+    ],
+    cmds: [
+      { id: "worker", name: "작업자를 태운다", note: "전지는 두고 간다.",
+        fx: h => h === "high" ? [] : [{ k: "R", d: -1 }] },
+      { id: "battery", name: "전지 상자를 싣는다", note: "작업자는 여기 남는다.",
+        fx: h => (h === "high" ? [] : [{ k: "R", d: -1 }]).concat([{ k: "H", d: 4, reward: true }]) }
+    ],
+    story: { worker: "작업자가 공구 가방을 끌어안고 자리에 앉는다. 전지 상자는 바닥에 남는다. \"정말 고칠 수 있어요.\"",
+      battery: "전지 상자가 자리에 묶인다. 작업자는 문 안쪽에 남는다. 해원이 자기 장갑 한 짝을 벗어 건넨다." }
+  }
+};
+function heatFx(n, h) {
+  if (h === "off") return CARDS[n].coverWorks && st.gear === "cover" ? [] : [{ k: "R", d: -1 }];
+  if (h === "low") return [{ k: "H", d: -1 }];
+  return [{ k: "H", d: -2 }, { k: "P", d: 1 }];
+}
+function heatNote(n, h) {
+  if (h === "off") {
+    if (CARDS[n].coverWorks && st.gear === "cover") return "방한 덮개가 추위를 막아 준다.";
+    if (n === 4 && st.gear === "cover") return "짐을 옮기느라 덮개를 못 쓴다. 몸이 식는다.";
+    return "열은 아끼지만 몸이 식는다.";
+  }
+  if (h === "low") return "무난하다.";
+  return "열이 새어 나가 추적이 붙는다. " + (CARDS[n].highNote || "");
+}
+function chaseCmds() {
+  const P = st.chaseP;
+  if (P <= 1) return [{ id: "pass", name: "조용히 돌아간다", note: "따라오는 것이 없다.", fx: () => [] }];
+  if (P === 2) return [
+    { id: "block", name: "통로를 막는다", note: "자재를 써서 추적을 끊는다.", fx: () => [{ k: "S", d: -1 }, { k: "P", set: 0 }] },
+    { id: "move", name: "그대로 간다", note: "뒤에서 한 번 물린다.", fx: () => [{ k: "R", d: -1 }] }
+  ];
+  return [
+    { id: "drop", name: "열원을 버린다", note: "전지 일부를 던져 미끼로 쓴다.", fx: () => [{ k: "H", d: -2 }, { k: "P", set: 1 }] },
+    { id: "focus", name: "집중 사격한다", note: "추격을 늦추지만 몇 명은 다친다.", fx: () => [{ k: "S", d: -2 }, { k: "R", d: -1 }, { k: "P", set: 1 }] },
+    { id: "force", name: "강행한다", note: "멈추지 않고 달린다. 도윤이 다친다.", fx: () => [{ k: "R", d: -3 }], injure: true }
+  ];
+}
+const CHASE_STORY = {
+  pass: "등 뒤가 조용하다. 눈 위에 남은 것은 분대의 발자국뿐이다.",
+  block: "서린이 좁은 통로에 차단 자재를 박아 넣는다. 뒤의 움직임이 멈춘다.",
+  move: "후미가 한 번 물린다. 해원이 걸으면서 붕대를 감는다.",
+  drop: "전지 두 개를 눈 위에 버린다. 크리처가 그 열에 엉겨 붙는다.",
+  focus: "모두 한 방향으로 쏜다. 추격이 늦춰진다. 해원의 팔에 상처가 남는다.",
+  force: "멈추지 않고 달린다. 운반 장치 손잡이를 잡은 도윤의 팔이 물린다. 그래도 놓지 않는다."
+};
+
+/* ---------- 안내 ---------- */
+const TIPS = {
+  gear: { keys: [], text: "장비는 <b>하나만</b> 가져갈 수 있다. 어느 쪽도 정답은 아니다." },
+  door: { keys: ["P"], text: "위의 <b>추적</b>은 크리처가 분대를 따라오는 정도다. 문을 나서는 순간 2에서 시작한다. 돌아가는 길에 이 숫자만큼 따라붙는다." },
+  heat: { keys: ["H", "R"], text: "밖에서는 매번 <b>난방</b>을 정한다. 켜면 <b>열</b>이 줄고, 끄면 <b>분대</b>가 지친다. 열은 벙커 난방과 같은 전지라서, 여기서 쓰면 오늘 밤 집이 추워진다." },
+  preview: { keys: [], text: "선택지를 누르면 위 계기판에 결과가 미리 표시된다. 확인하고 결정하면 된다. 분대가 0이 되면 출격이 무너진다." },
+  high: { keys: ["P"], text: "<b>세게</b> 켜면 열이 새어 추적이 붙는다. 대신 이 장면에서는 몸으로 버티기 쉬워진다." },
+  lock: { keys: [], text: "가진 것보다 비싼 선택지는 흐리게 잠긴다." },
+  choice: { keys: [], text: "이 선택은 숫자만이 아니라 이야기에 남는다. 그 뒤의 일은 미리 알려주지 않는다." },
+  chase: { keys: ["P"], text: "돌아가는 길이다. 지금 <b>추적</b> 수치만큼 따라온다. 0~1이면 조용히, 2면 뒤에서 접촉, 3이면 정면 추격이다." },
+  night: { keys: ["H"], text: "돌아왔을 때 남은 <b>열</b>로 오늘 밤 집이 정해진다. 8 이상이면 따뜻하고, 4~7은 미지근하고, 3 이하면 난방이 끊긴다. 밤이 지나면 열이 3 충전된다." },
+  prep: { keys: ["S", "R"], text: "다음 출격 전에 <b>보급</b>이 조금 들어온다. 남은 보급으로 <b>분대</b>를 치료할 수 있다." }
+};
+function tip(id) {
+  if (!st.tutorial) return "";
+  const t = TIPS[id];
+  st.focus = t.keys;
+  return `<div class="tip" role="note"><span class="tip-mark">안내</span><span class="tip-body">${t.text}</span></div>`;
+}
+
+/* ---------- 계기판 ---------- */
+function renderHud(proj) {
+  const hud = document.getElementById("hud");
+  hud.hidden = st.step === "title";
+  const label = { c1: "출격 1 · 출발", c2: "출격 1 · 1/4 설원", c3: "출격 1 · 2/4 중계소 문", c4: "출격 1 · 3/4 중계소 안",
+    c5: "출격 1 · 4/4 귀환로", ret: "벙커", night: "그 밤", prep: "다음 날 아침", end: "기록" };
+  document.getElementById("hud-step").textContent = label[st.step] || "";
+  const focus = st.focus || [];
+  document.getElementById("tiles").innerHTML = ["H", "S", "R", "P"].map(k => {
+    const now = st[k], next = proj ? proj[k] : now;
+    let bar = "";
+    for (let i = 1; i <= MAX[k]; i++) {
+      const cls = i <= Math.min(now, next) ? "on" : i <= now ? "lose" : i <= next ? "gain" : "";
+      bar += `<span class="cell ${cls}"></span>`;
+    }
+    const num = next !== now ? `${now}<span class="to">→${next}</span>` : `${now}`;
+    const word = k === "P" ? `<span class="t-word">${P_WORD[next]}</span>` : "";
+    const d = st.flash && st.flash[k] ? `<span class="delta">${st.flash[k] > 0 ? "+" : "−"}${Math.abs(st.flash[k])}</span>` : "";
+    return `<div class="tile t-${k}${focus.includes(k) ? " focus" : ""}"><div class="t-name">${NAME[k]}</div>
+      <div class="t-num">${num}${word}</div><div class="bar" aria-hidden="true">${bar}</div>${d}</div>`;
+  }).join("");
+  st.flash = null;
+}
+
+/* ---------- 화면 공용 ---------- */
+function go(step) {
+  if (step === "c5") st.chaseP = st.P;
+  Object.assign(st, { step, phase: null, heat: null, pick: null, story: null });
+  render(); window.scrollTo({ top: 0 });
+}
+function snap(label) { st.log.push({ label, H: st.H, S: st.S, R: st.R, P: st.P }); }
+function optHtml(o) {
+  return `<button class="opt" data-id="${o.id}" aria-pressed="${o.picked}" ${o.locked ? "disabled" : ""}>
+    <div class="opt-top"><span class="opt-name">${o.name}</span><span class="chips">${o.chips}</span></div>
+    ${o.note ? `<div class="opt-note">${o.note}</div>` : ""}
+    ${o.lockWhy ? `<div class="opt-note">${o.lockWhy}</div>` : ""}
+    ${o.warn ? `<div class="opt-warn">${o.warn}</div>` : ""}
+  </button>
+  ${o.picked && !o.locked ? `<div class="confirm"><button class="btn ${o.danger ? "danger" : ""}" id="ok">${o.okText || "이걸로 결정"}</button></div>` : ""}`;
+}
+const COLLAPSE_WARN = "분대가 무너진다. 철수 담당인 도윤이 남게 된다.";
+
+function render() {
+  st.focus = [];
+  const s = st.step;
+  const fn = { title: renderTitle, c1: renderC1, c5: renderChase, ret: renderReturn, night: renderNight, prep: renderPrep, end: renderEnd }[s];
+  if (fn) fn(); else renderAction(+s[1]);
+}
+
+/* ---------- 처음 ---------- */
+function renderTitle() {
+  renderHud();
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">끝나지 않는 겨울</div>
+    <h1>백야선</h1>
+    <div class="prose">
+      <p>너는 지하 벙커 수색대의 분대장이다. 벙커에는 가족이 있다.</p>
+      <p>밖에서 몸을 데우는 열전지는 벙커 난방과 같은 전지다. 밖에서 아낄수록 분대가 지치고, 밖에서 쓸수록 집이 추워진다.</p>
+      <p>오늘의 임무는 난방 중계소에서 전지를 가져오는 것. 다섯 번 정도 고르면 끝난다.</p>
+    </div>
+    <label class="toggle"><input type="checkbox" id="tut" ${st.tutorial ? "checked" : ""}> 처음 하는 사람을 위한 안내 보기</label>
+    <div class="btn-row"><button class="btn" id="start">출격 준비</button></div>
+  </section>`;
+  document.getElementById("tut").onchange = e => { st.tutorial = e.target.checked; };
+  document.getElementById("start").onclick = () => { st = fresh(st.tutorial); go("c1"); };
+}
+
+function renderC1() {
+  const out = !!st.gear;
+  let body = "";
+  if (!out) {
+    body = `${tip("gear")}<div class="q">무엇을 챙길까?</div><div class="opts">
+      ${optHtml({ id: "decoy", name: "열 미끼", chips: "", note: "전지를 태워 크리처를 다른 곳으로 끌어낸다. 중계소 문 앞에서 쓸 수 있다.", picked: st.pick === "decoy", okText: "열 미끼를 챙긴다" })}
+      ${optHtml({ id: "cover", name: "방한 덮개", chips: "", note: "난방을 꺼도 분대가 덜 지친다. 짐을 옮길 때는 못 쓴다.", picked: st.pick === "cover", okText: "방한 덮개를 챙긴다" })}
+    </div>`;
+  } else {
+    body = `<div class="outcome prose"><p>문이 열린다. 운반 장치 배기구에서 김이 피어오른다. 눈 아래 어딘가에서 무언가 방향을 튼다.</p></div>
+      ${tip("door")}
+      <div class="btn-row"><button class="btn" id="next">밖으로</button></div>`;
+  }
+  renderHud();
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">거주 구역</div>
+    <h2>출발</h2>
+    <div class="prose">
+      <p class="say">가족: "오늘부터 이 구역 난방이 하루 여섯 시간이래. 너희가 들고 나가는 전지 때문이라던데."</p>
+      <p>정비병 도윤이 고장 난 라디오를 켜 둔 채 말한다. "돌아오면 주파수 맞춰줄게." 오늘 철수 장치 담당은 그다.</p>
+    </div>
+    ${body}
+  </section>`;
+  if (!out) {
+    main.querySelectorAll("[data-id]").forEach(b => b.onclick = () => { st.pick = b.dataset.id; render(); });
+    const ok = document.getElementById("ok");
+    if (ok) ok.onclick = () => { st.gear = st.pick; st.pick = null; const d = apply([{ k: "P", set: 2 }]); flash(d); snap("출발"); render(); };
+  } else document.getElementById("next").onclick = () => go("c2");
+}
+
+/* ---------- 카드 2~4: 난방 → 명령 ---------- */
+function renderAction(n) {
+  const card = CARDS[n];
+  if (!st.phase) st.phase = "heat";
+  let body = "", proj = null;
+
+  if (st.phase === "heat") {
+    const opts = card.heats.map(h => {
+      const fx = heatFx(n, h);
+      const anyCmd = card.cmds.some(c => (!c.needs || st.gear === c.needs) && affordable(fx.concat(c.fx(h))));
+      const locked = !affordable(fx) || !anyCmd;
+      if (st.pick === h) proj = simulate(fx, []);
+      return optHtml({ id: h, name: HEAT_NAME[h], chips: chips(fx), note: heatNote(n, h), picked: st.pick === h, locked,
+        lockWhy: locked ? "열이 모자라다." : "", okText: "다음: 행동 고르기" });
+    }).join("");
+    const t = n === 2 ? tip("heat") : n === 3 ? tip("high") : "";
+    body = `${t}<div class="q">이동하는 동안 난방은?</div><div class="opts">${opts}</div>`;
+  } else if (st.phase === "cmd") {
+    const hfx = heatFx(n, st.heat);
+    const opts = card.cmds.map(c => {
+      const hasGear = !c.needs || st.gear === c.needs;
+      const fx = c.fx(st.heat);
+      const all = hfx.concat(fx);
+      const locked = !hasGear || !affordable(all);
+      const p = simulate(hfx, fx);
+      if (st.pick === c.id) proj = p;
+      return optHtml({ id: c.id, name: c.name, chips: chips(fx), note: c.note, picked: st.pick === c.id, locked,
+        lockWhy: !hasGear ? "열 미끼를 챙기지 않았다." : locked ? "가진 것이 모자라다." : "",
+        warn: !locked && p.R <= 0 ? COLLAPSE_WARN : "", danger: p.R <= 0 });
+    }).join("");
+    if (!proj) proj = simulate(hfx, []);
+    const t = n === 2 ? tip("preview") : n === 3 ? tip("lock") : n === 4 ? tip("choice") : "";
+    body = `<div class="picked">난방: <span class="chips"><span class="opt-name" style="font-size:14px;color:var(--frost)">${HEAT_NAME[st.heat]}</span>${chips(hfx)}</span>
+      <button class="link" id="back">바꾸기</button></div>
+      ${t}<div class="q">어떻게 할까?</div><div class="opts">${opts}</div>`;
+  } else {
+    body = `<div class="outcome prose"><p>${st.story}</p>${st.collapsed ? `<p class="alert">분대가 더는 버티지 못한다.</p>` : ""}</div>
+      <div class="btn-row"><button class="btn" id="next">${st.collapsed ? "철수" : "계속"}</button></div>`;
+  }
+
+  renderHud(proj);
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">${card.place}</div>
+    <h2>${card.title}</h2>
+    <div class="prose">${card.text.map(t => `<p>${t}</p>`).join("")}</div>
+    ${body}
+  </section>`;
+
+  main.querySelectorAll("[data-id]").forEach(b => b.onclick = () => { st.pick = b.dataset.id; render(); });
+  const ok = document.getElementById("ok");
+  if (ok && st.phase === "heat") ok.onclick = () => { st.heat = st.pick; st.pick = null; st.phase = "cmd"; render(); };
+  if (ok && st.phase === "cmd") ok.onclick = () => {
+    const c = card.cmds.find(x => x.id === st.pick);
+    execute(n, heatFx(n, st.heat), c.fx(st.heat), c, card.story[c.id]);
+  };
+  const back = document.getElementById("back");
+  if (back) back.onclick = () => { st.pick = st.heat; st.heat = null; st.phase = "heat"; render(); };
+  const nx = document.getElementById("next");
+  if (nx) nx.onclick = () => go(st.collapsed ? "ret" : "c" + (n + 1));
+}
+
+function execute(n, heat, cmd, c, story) {
+  const total = {};
+  const add = d => { for (const k in d) total[k] = (total[k] || 0) + d[k]; };
+  st.pick = null; st.phase = "done"; st.story = story;
+  add(apply(heat));
+  if (st.R === 0) { st.collapsed = true; st.story = "난방을 끈 채 버티다 분대가 주저앉는다."; }
+  else {
+    add(apply(cmd.filter(e => !e.reward)));
+    if (st.R === 0) st.collapsed = true;
+    else {
+      add(apply(cmd.filter(e => e.reward)));
+      if (n === 4) { st.cargo = c.id; if (c.id === "battery") st.tempBattery = true; }
+      if (c.injure && st.doyun === "정상") st.doyun = "부상";
+    }
+  }
+  flash(total);
+  snap(st.collapsed ? `${n === 5 ? "귀환로" : CARDS[n].title} · 붕괴` : `${n === 5 ? "귀환로" : CARDS[n].title} · ${n === 5 ? "" : HEAT_NAME[st.heat] + " · "}${c.name}`);
+  render();
+}
+
+/* ---------- 카드 5 ---------- */
+function renderChase() {
+  let body = "", proj = null;
+  if (st.phase !== "done") {
+    const opts = chaseCmds().map(c => {
+      const fx = c.fx();
+      const locked = !affordable(fx);
+      const p = simulate([], fx);
+      if (st.pick === c.id) proj = p;
+      return optHtml({ id: c.id, name: c.name, chips: chips(fx), note: c.note, picked: st.pick === c.id, locked,
+        lockWhy: locked ? "가진 것이 모자라다." : "", warn: !locked && p.R <= 0 ? COLLAPSE_WARN : "", danger: p.R <= 0 });
+    }).join("");
+    body = `${tip("chase")}<div class="q">어떻게 할까?</div><div class="opts">${opts}</div>`;
+  } else {
+    body = `<div class="outcome prose"><p>${st.story}</p>${st.collapsed ? `<p class="alert">분대가 더는 버티지 못한다.</p>` : ""}</div>
+      <div class="btn-row"><button class="btn" id="next">${st.collapsed ? "철수" : "벙커로"}</button></div>`;
+  }
+  const intro = st.chaseP <= 1 ? "돌아오는 길. 바람 소리만 따라온다."
+    : st.chaseP === 2 ? "돌아오는 길. 백 미터쯤 뒤에서 눈이 들썩인다. 아직 거리가 있다."
+    : "돌아오는 길. 운반 장치 바로 뒤에서 눈이 터진다. 정면 추격이다.";
+  renderHud(proj);
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">귀환로</div>
+    <h2>따라온 것</h2>
+    <div class="prose"><p>${intro}</p></div>
+    ${body}
+  </section>`;
+  main.querySelectorAll("[data-id]").forEach(b => b.onclick = () => { st.pick = b.dataset.id; render(); });
+  const ok = document.getElementById("ok");
+  if (ok) ok.onclick = () => { const c = chaseCmds().find(x => x.id === st.pick); execute(5, [], c.fx(), c, CHASE_STORY[c.id]); };
+  const nx = document.getElementById("next");
+  if (nx) nx.onclick = () => go("ret");
+}
+
+/* ---------- 귀환 ---------- */
+function renderReturn() {
+  if (!st.retDone) {
+    let d;
+    if (st.collapsed) {
+      st.doyun = "사망"; st.c1 = "실패";
+      d = apply((st.tempBattery ? [{ k: "H", d: -4 }] : []).concat([{ k: "R", set: 1 }, { k: "P", set: 0 }]));
+    } else {
+      st.c1 = st.cargo === "worker" ? "구조" : "전지";
+      d = apply([{ k: "P", set: 0 }]);
+    }
+    flash(d); st.retDone = true; snap("귀환");
+  }
+  const candy = st.doyun === "부상" ? "도윤은 붕대 감은 손으로 사탕 껍질을 벗기지 못한다." : "도윤이 사탕을 문 채 라디오 쪽으로 간다.";
+  const story = st.collapsed
+    ? `<p>분대가 더는 걷지 못한다. 도윤이 운반 장치의 철수 레버를 붙잡는다.</p>
+       <p class="say">도윤: "먼저 가. 이거 내가 맡은 거잖아."</p>
+       <p>장치가 분대를 끌고 언덕을 넘는다. 돌아봤을 때 레버 옆에는 아무도 없다. ${st.cargo === "worker" ? "작업자를 태운 자리도" : st.cargo === "battery" ? "전지 상자도" : ""} 장치와 함께 눈 속에 남았다.</p>`
+    : st.c1 === "구조"
+      ? `<p>벙커 문이 닫힌다. 작업자가 공구 가방을 내려놓고 처음으로 이름을 말한다.</p><p>부분대장 서린이 단맛 없는 사탕을 하나씩 나눠 준다. ${candy}</p>`
+      : `<p>벙커 문이 닫힌다. 전지 상자가 충전실로 들어간다. 작업자는 오지 않았다.</p><p>부분대장 서린이 단맛 없는 사탕을 하나씩 나눠 준다. ${candy}</p>`;
+  renderHud();
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">벙커 입구</div>
+    <h2>${st.collapsed ? "철수" : "귀환"}</h2>
+    <div class="prose">${story}</div>
+    <div class="btn-row"><button class="btn" id="next">밤이 된다</button></div>
+  </section>`;
+  document.getElementById("next").onclick = () => go("night");
+}
+
+/* ---------- 밤 ---------- */
+function renderNight() {
+  const band = st.night ? st.night.band : st.H >= 8 ? "warm" : st.H >= 4 ? "mild" : "cold";
+  const scene = {
+    warm: "거주 구역에 온전한 난방이 들어온다. 따뜻한 식사. 주민 정비조가 운반 장치를 말리며 쓸 만한 물자를 골라낸다.",
+    mild: "난방 시간이 줄었다. 미지근한 국. 가족은 외투를 입은 채 먹는다.",
+    cold: "거주 구역 난방이 끊겼다. 주민들이 담요를 들고 공동 대피실로 옮긴다."
+  }[band];
+  const fam = st.collapsed ? "가족: \"도윤 씨는?\" 대답을 기다리다가 더 묻지 않는다."
+    : st.c1 === "구조" ? "가족: \"그 사람 데려오느라 여기가 추운 거지?\" 잠깐 말이 없다가 묻는다. \"이름은 알아?\""
+    : "가족: \"거기 사람 있었다며. 그 사람은 어떻게 됐어?\"";
+
+  let body;
+  if (!st.night) {
+    const opts = band === "cold"
+      ? [{ id: "aux", name: "공동 보조 난방을 켠다", fx: [{ k: "S", d: -2 }, { k: "R", d: 1 }], note: "보급으로 대피실을 데운다." },
+         { id: "none", name: "켜지 않는다", fx: [], note: "보급을 아낀다. 가족은 추운 대피실에서 잔다." }]
+      : null;
+    body = opts
+      ? `${tip("night")}<div class="q">대피실을 데울까?</div><div class="opts">${opts.map(o => optHtml({
+          id: o.id, name: o.name, chips: chips(o.fx), note: o.note, picked: st.pick === o.id,
+          locked: !affordable(o.fx), lockWhy: !affordable(o.fx) ? "보급이 모자라다." : "", okText: "잠든다" })).join("")}</div>`
+      : `${tip("night")}<div class="btn-row"><button class="btn" id="sleep">잠든다</button></div>`;
+    if (opts && st.pick) {
+      const o = opts.find(x => x.id === st.pick);
+      renderHud(simulate(o.fx, []));
+    } else renderHud();
+  } else {
+    const after = band === "cold" ? (st.night.aux
+      ? "<p>공동 대피실에 보조 난로가 켜진다. 가족은 다른 집 아이와 한 담요를 나눠 덮는다.</p>"
+      : "<p>가족은 신발을 신은 채 잔다. 대피실 끝에서 누군가 밤새 기침한다.</p>") : "";
+    const tail = st.doyun === "사망"
+      ? "<p>누가 도윤의 라디오를 켜 본다. 주파수가 맞지 않는다. 잡음이 오래 이어진다.</p>"
+      : `<p>${st.doyun === "부상" ? "도윤이 한 손으로 라디오 다이얼을 돌린다. 몇 번 놓친 끝에 노래 한 소절이 잡힌다." : "도윤이 라디오 주파수를 맞춘다. 노래가 나온다."}</p>
+         <p>의무병 해원이 네 그릇에 고기를 덜어 준다. "밥 먹었냐는 말은 내가 할게."</p>`;
+    body = `<div class="outcome prose">${after}${tail}<p class="opt-note">밤사이 전지가 충전됐다.</p></div>
+      <div class="btn-row"><button class="btn" id="next">아침</button></div>`;
+    renderHud();
+  }
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">거주 구역</div>
+    <h2>그 밤</h2>
+    <div class="prose"><p>${scene}</p><p class="say">${fam}</p></div>
+    ${body}
+  </section>`;
+
+  const resolve = aux => {
+    const fx = [];
+    if (band === "warm") fx.push({ k: "R", d: 2 }, { k: "S", d: 1 });
+    if (band === "mild") fx.push({ k: "R", d: 1 });
+    if (band === "cold" && aux) fx.push({ k: "S", d: -2 }, { k: "R", d: 1 });
+    fx.push({ k: "H", d: 3 });
+    flash(apply(fx));
+    st.night = { band, aux }; st.pick = null;
+    snap("밤 지나고");
+    render();
+  };
+  main.querySelectorAll("[data-id]").forEach(b => b.onclick = () => { st.pick = b.dataset.id; render(); });
+  const ok = document.getElementById("ok"); if (ok) ok.onclick = () => resolve(st.pick === "aux");
+  const sl = document.getElementById("sleep"); if (sl) sl.onclick = () => resolve(false);
+  const nx = document.getElementById("next"); if (nx) nx.onclick = () => go("prep");
+}
+
+/* ---------- 다음 출격 준비 ---------- */
+function renderPrep() {
+  if (!st.prepDone) {
+    const fx = [{ k: "S", d: 2 }];
+    if (st.c1 === "구조") fx.push({ k: "H", d: 2 }, { k: "S", d: 1 });
+    fx.push({ k: "P", set: 2 });
+    flash(apply(fx)); st.prepDone = true;
+  }
+  const helper = st.c1 === "구조"
+    ? "<p>작업자가 공구 가방을 메고 나타난다. 밤새 중계소 회선을 고쳤다고 한다. 충전실 계기가 올라가 있고, 정비 물자도 조금 챙겨 왔다.</p>" : "";
+  const medFx = [{ k: "S", d: -1 }, { k: "R", d: 1 }];
+  const docFx = [{ k: "S", d: -1 }];
+  let proj = null;
+  if (st.pick === "med") proj = simulate(medFx, []);
+  if (st.pick === "doc") proj = simulate(docFx, []);
+  const opts = [];
+  if (!st.medic) opts.push(optHtml({ id: "med", name: "분대 치료", chips: chips(medFx), note: st.R >= 6 ? "분대가 이미 멀쩡하다." : "해원이 남은 상처를 다시 감는다.",
+    picked: st.pick === "med", locked: st.S < 1 || st.R >= 6, okText: "치료한다" }));
+  if (st.doyun === "부상" && !st.doyunTreated) opts.push(optHtml({ id: "doc", name: "도윤 치료", chips: chips(docFx),
+    note: "그냥 두면 다음 출격의 정비 작업에서 분대가 더 지친다.", picked: st.pick === "doc", locked: st.S < 1, okText: "치료한다" }));
+  const prepTip = opts.length ? tip("prep") : "";
+  renderHud(proj);
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">다음 날 아침</div>
+    <h2>출발 준비</h2>
+    <div class="prose">${helper}<p>정기 보급이 들어왔다. 다음 목적지는 폐쇄된 AI 연구소 근처다. 서린이 출격표 맨 아래에 귀환 시각을 적는다.</p></div>
+    ${opts.length ? `${prepTip}<div class="q">출발 전에 치료할까? <small>선택</small></div><div class="opts">${opts.join("")}</div>` : ""}
+    <div class="btn-row"><button class="btn ghost" id="next">출격 1 마치기</button></div>
+  </section>`;
+  main.querySelectorAll("[data-id]").forEach(b => b.onclick = () => { st.pick = b.dataset.id; render(); });
+  const ok = document.getElementById("ok");
+  if (ok) ok.onclick = () => {
+    if (st.pick === "med") { flash(apply(medFx)); st.medic = true; }
+    else { flash(apply(docFx)); st.doyunTreated = true; st.doyun = "정상"; }
+    st.pick = null; render();
+  };
+  document.getElementById("next").onclick = () => { snap("출격 2 출발"); go("end"); };
+}
+
+/* ---------- 기록 ---------- */
+function renderEnd() {
+  renderHud();
+  const rows = st.log.map(r => `<tr><td>${r.label}</td><td>${r.H}</td><td>${r.S}</td><td>${r.R}</td><td>${r.P}</td></tr>`).join("");
+  const night = { warm: "따뜻했다", mild: "미지근했다", cold: st.night?.aux ? "대피실, 보조 난방" : "대피실, 난방 없음" }[st.night?.band] || "-";
+  main.innerHTML = `<section class="card">
+    <div class="eyebrow">출격 1 · 식어가는 선</div>
+    <h2>${st.collapsed ? "회수 실패" : st.c1 === "구조" ? "사람을 데려왔다" : "전지를 가져왔다"}</h2>
+    <dl class="facts">
+      <dt>챙긴 장비</dt><dd>${st.gear === "decoy" ? "열 미끼" : "방한 덮개"}</dd>
+      <dt>한 자리</dt><dd>${st.c1 === "구조" ? "작업자를 태웠다" : st.c1 === "전지" ? "전지를 실었다" : "모두 잃었다"}</dd>
+      <dt>그 밤</dt><dd>${night}</dd>
+      <dt>도윤</dt><dd>${st.doyun === "정상" ? (st.doyunTreated ? "치료받았다" : "무사하다") : st.doyun === "부상" ? "다친 채 출발한다" : "돌아오지 못했다"}</dd>
+    </dl>
+    <details><summary>수치 기록 보기</summary>
+      <div class="log-wrap"><table class="log"><thead><tr><th>시점</th><th>열</th><th>보급</th><th>분대</th><th>추적</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </details>
+    <div class="prose" style="margin-top:20px">
+      <p>출격 2 「응답하는 연구소」는 아직 만들지 않았다.</p>
+      <p class="opt-note">다른 장비, 다른 난방, 다른 한 자리를 골라 다시 해 볼 수 있다.</p>
+    </div>
+    <div class="btn-row"><button class="btn" id="again">다시 출격</button><button class="btn ghost" id="title">처음 화면</button></div>
+  </section>`;
+  document.getElementById("again").onclick = () => { st = fresh(st.tutorial); go("c1"); };
+  document.getElementById("title").onclick = () => { st = fresh(st.tutorial); render(); };
+}
+
+/* ---------- 시작 ---------- */
+function start(data) { st = data && data.step ? data : fresh(); render(); }
+if (window.claude?.hot?.snapshot) window.claude.hot.snapshot(() => st);
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+</body>
+</html>
