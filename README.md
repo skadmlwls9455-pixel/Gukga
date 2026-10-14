@@ -1,50 +1,88 @@
-# 국가 (國家)
+# Gukga (국가, "The Nation")
 
-> 대통령은 길어야 8년. 나라는 남는다.
+**A card-decision game where presidents come and go, and the country remembers.**
 
-대통령을 차례로 맡아 한 나라를 이어 가는 카드 결정 게임. 기획서 [`docs/scenario_v3.md`](docs/scenario_v3.md) 14장의 **검증판**을 구현했다.
+> A president lasts eight years at most. The nation remains.
 
-## 실행
+You play a sequence of presidents of a fictional republic. Each one gets eight
+binary decisions per term. Your decisions become the next president's
+situation, and how six factions *remember* each president shapes the cards
+your successors are dealt. The game ends with a history-textbook paragraph
+about the country you built.
 
-빌드 과정 없음. `index.html`을 브라우저로 열면 된다. (키보드 ← → 로 선택 가능)
+Single `index.html` with no build step and no dependencies. The UI is in Korean.
 
-## 검증판 범위
+## Why I built it
 
-| 항목 | 내용 |
-|---|---|
-| 나라 | 아란도 공화국, 산업화 단계에서 시작 (1968년~) |
-| 대통령 | 3명, 임기당 결재 8장 (재선 없음, 이름·성별 직접 입력 또는 무작위) |
-| 지표 | 민심 / 경제 / 국제신뢰도 / 부패도. 부패도 60 이상이면 경제 수치가 ±10 흐려짐 |
-| 세력 | 6개, 숫자 없이 상태 단어(적대~열광) + 헤드라인. 적대·열광 압력 일부 적용 |
-| 기반 | 제철소, 수출 공단, 노동감독청, 국립대학, 통화 안정 (+ `법대로` 선택 시 독립 법원) |
-| 유산 | 규칙 ① 계승 압력, ② 소환(헤드라인), ③ 재평가, ④ 흐려짐(×0.8) |
-| 교체 | 임기 만료·선거 패배 → [계승], 국가 부도 → [IMF]. 혁명·고립·포획도 즉시 변화만 적용 |
-| 선거 | 민심 + 야권 + 재계 자금 + 공약. 선관위가 없어 매번 [개표] 카드 |
-| 퇴임 | [외신 기자] 질문 → 그 순간 세력 상태가 기억값이 됨 → 유산 카드 → 역대 대통령 |
-| 엔딩 | 3명 뒤 나라의 교과서 한 단락 + 플레이테스트용 검증 기록(복사 가능) |
+Swipe-style decision games (Reigns-like) usually reset when the ruler dies.
+I wanted the opposite: **consequences that outlive the decision-maker**. The
+design question was how to make long-term, hard-to-see effects visible and
+felt in a game that only ever asks "left or right?"
 
-### 카드
+The three principles from the design doc:
 
-- **기획서 12장 + 예산**: 장관 셋, IMF, 비상조치, 제철소, 제철소 노조, 3만 명의 줄, 무상 급식, 급식 재원, 급식 축소, 동상(+재건립), 계승, 두 개의 보고서, 예산
-- **선거·퇴임**: 개표, 외신 기자
-- **초안 (부록 '재작성 대기' 목록에서 v3 원칙으로 작성)**: 북부 창고, 해외 계좌, 연료값, 채무 재조정, 오인 체포, 제철소 파업, 위약금 소송, 공장 사고
-- **숨 고르기 (카드 풀 고갈 대비)**: 결승전, 공식 초상화, 국빈 만찬
+1. **The protagonist is the nation.** Presidents pass; infrastructure and
+   memory remain.
+2. **Hero and villain are the same person.** One decision is remembered as
+   rescue by one faction and as betrayal by another.
+3. **The past is not over.** A predecessor's decisions come back as bills, and
+   memories of them come back as pressure.
 
-### 기획서와 다르게 정한 것
+## Design
 
-- 아란도의 시작 기반에서 **국립대학을 뺐다**. 검증판에서 국립대학은 지어야 하는 기반이고, [급식 축소]가 국립대학 진행을 올리기 때문.
-- 재선이 없으므로 선거는 "여당 후보 승리 / 패배"로 판정한다. [무상 급식]을 발표하면 다음 대통령의 첫 예산이 [급식 재원]이 된다. 미뤘다가 지면 상대의 공약이 남아 똑같이 된다.
-- 기반의 '매 임기 효과'는 임기 말(선거 직전)에 정산한다.
-- 학교 급식 기반(8년)과 국립대학 효과(세 임기 뒤)는 12년짜리 검증판에서는 거의 닿지 않는다. 엔딩 문단에 경과 연수만 남는다.
+The state lives in three layers:
 
-## 자동 플레이 검증
+| Layer | What | When the president changes |
+|---|---|---|
+| Nation | 4 indicators (public opinion, economy, international trust, corruption), development stage, infrastructure, flags | carries over; *how* power changed hands triggers events |
+| Attitude | how 6 factions see the *current* president | resets to "watching" |
+| Memory | how each faction remembers *each past* president | kept per president; fades (×0.8), and later events can rewrite it |
 
-```
+Design choices I'd point to:
+
+- **Constraints in the card, outcomes from the state.** Each card explains why
+  there are only two options. The same choice resolves differently depending on
+  the country's condition.
+- **Hidden information as a mechanic.** Factions show a mood word and a
+  headline, not a number. Above 60 corruption, the economy reading itself
+  becomes noisy (±10). You govern with less and less reliable data.
+- **Legacy rules.** Four rules (succession pressure, recall, re-evaluation,
+  fading) let a past president's memory change the next president's cards.
+  The faction mood at the moment of the farewell press interview is frozen as
+  that president's memory value.
+- **No death at the extremes.** v3 replaced "an indicator hit 0, you died" with
+  collapse at the bottom and *imbalance crises* at the top. The pressure comes
+  from trade-offs instead of a single meter.
+
+## Testing the balance
+
+`tools/sim.js` loads the game script headlessly and auto-plays N games with
+random or policy-driven choices. It reports errors, how terms ended, title
+combinations and card frequency.
+
+```sh
 node tools/sim.js 3000
 ```
 
-무작위 선택 3,000판에서 에러 0. 대통령 셋의 칭호 조합은 200가지 이상 나왔다. 대통령마다 한 세력을 밀어주는 일관된 정책으로 돌리면 2,000판에서 280가지 안팎이다.
+3,000 random games run with 0 errors and produce 200+ distinct title
+combinations. The simulator also surfaced the main known imbalance: random play
+ends in **"captured state" (corruption 100)** far too often, because more cards
+raise corruption than lower it. That is the next tuning target.
 
-알려진 쏠림 (수치 조정 필요):
-- 몰락 중 **포획된 국가(부패도 100)** 가 압도적으로 많다. 부패도를 올리는 선택(제철소 +15, 개표 조정 +20 등)에 비해 내리는 선택이 적다. 부패도가 70 이상이면 [장관 셋]이 더 자주 나오게 해 두었다.
-- 군부·구세력·변방 칭호는 드물다. 검증판 카드 중 이 세력들을 크게 움직이는 카드가 적기 때문이다([반군], [숲 아래]가 들어가면 달라질 것).
+## Run it
+
+Open `index.html` in a browser (← → keys also work).
+
+## Files
+
+```text
+index.html            the game (validation build: 3 presidents, 8 decisions per term)
+docs/scenario_v3.md   full design document v3 (Korean)
+tools/sim.js          headless auto-play balance checker
+README_KO.md          original Korean README with the card list and spec deviations
+```
+
+## How this was built
+
+I wrote the game design (`docs/scenario_v3.md`). The implementation was built
+with an AI coding assistant from that design.
