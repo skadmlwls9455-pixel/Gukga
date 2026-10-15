@@ -1,0 +1,1168 @@
+<title>국가</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@400;600;800&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+<style>
+/* Layout: 대통령 집무실 책상 — 왼쪽은 나라 상황판(지표·세력·기반), 오른쪽은 결재 서류 한 장. 서류에는 보라색 고무도장이 찍힌다. */
+:root{
+  --paper:#E5E9E2; --sheet:#F7F8F4; --ink:#1B2420; --muted:#5A655F; --rule:#C3CCC4;
+  --stamp:#5B3E91; --alarm:#A4352A; --good:#2E6A4E; --warn:#94650F; --wash:#DCE2DA;
+  --display:'Hahmlet','Noto Serif KR','Nanum Myeongjo',serif;
+  --body:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --mono:'Nanum Gothic Coding','D2Coding',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111715; --sheet:#1A221F; --ink:#E1E6DF; --muted:#97A29B; --rule:#2E3A35;
+    --stamp:#B39BEA; --alarm:#E7745F; --good:#73C49B; --warn:#D9AE55; --wash:#222C28; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111715; --sheet:#1A221F; --ink:#E1E6DF; --muted:#97A29B; --rule:#2E3A35;
+  --stamp:#B39BEA; --alarm:#E7745F; --good:#73C49B; --warn:#D9AE55; --wash:#222C28; color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;}
+#app{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:16px 48px;}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:800}
+.mono{font-family:var(--mono)}
+.lbl{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;color:var(--muted)}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--sheet);padding:10px 18px;font-family:var(--display);font-weight:600;font-size:15px;border-radius:2px}
+.btn:hover{background:var(--stamp);border-color:var(--stamp)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost:hover{border-color:var(--stamp);color:var(--stamp);background:transparent}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ── header bar ── */
+.bar{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;border-bottom:1.5px solid var(--ink);padding-bottom:10px;margin-bottom:14px}
+.bar .seal-title{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.06em}
+.bar .meta{font-family:var(--mono);font-size:12.5px;color:var(--muted);display:flex;gap:4px 14px;flex-wrap:wrap}
+.bar .meta b{color:var(--ink);font-weight:700}
+
+/* ── desk grid ── */
+.desk{display:grid;grid-template-columns:300px minmax(0,1fr);grid-template-areas:"vitals main" "ledger main";gap:18px 26px;align-items:start}
+.vitals{grid-area:vitals;display:grid;gap:16px}
+.ledger{grid-area:ledger;display:grid;gap:16px}
+.main{grid-area:main;display:grid;gap:12px;min-width:0}
+@media (max-width:860px){
+  .desk{grid-template-columns:minmax(0,1fr);grid-template-areas:"vitals" "main" "ledger"}
+}
+.panel h3{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;font-weight:700;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:4px;margin-bottom:8px}
+
+/* indicators */
+.inds{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.ind .top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+.ind .num{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums;font-size:15px}
+.ind .num .q{color:var(--warn);margin-left:2px}
+.ind .track{height:7px;background:var(--wash);border:1px solid var(--rule);position:relative}
+.ind .track i{position:absolute;inset:0 auto 0 0;background:var(--ink);transition:width .5s ease}
+.ind.danger .track i{background:var(--alarm)}
+.ind.danger .num{color:var(--alarm)}
+.ind.fog .track i{background:repeating-linear-gradient(90deg,var(--ink) 0 4px,transparent 4px 6px)}
+.ind .why{font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+/* factions */
+.facs{display:grid;grid-template-columns:1fr 1fr;gap:6px;list-style:none;margin:0;padding:0}
+.fac{display:grid;grid-template-columns:28px 1fr auto;gap:2px 8px;align-items:center;padding:5px 6px;border:1px solid var(--rule);background:var(--sheet);border-radius:2px}
+.fac .sg{grid-row:span 2;width:28px;height:28px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;border:1.5px solid currentColor;border-radius:2px}
+.fac .nm{font-size:13px;font-weight:500}
+.fac .sw{font-family:var(--display);font-weight:800;font-size:13px;text-align:right}
+.fac .pips{grid-column:2 / span 2;display:flex;gap:3px}
+.fac .pips i{flex:1;height:3px;background:var(--wash)}
+.fac .pips i.on{background:currentColor}
+.s-적대{color:var(--alarm)} .s-불만{color:var(--warn)} .s-관망{color:var(--muted)} .s-호의{color:var(--good)} .s-열광{color:var(--stamp)}
+.fac .nm{color:var(--ink)}
+
+/* stage & bases */
+.stage-line{font-family:var(--display);font-size:18px;font-weight:800}
+.stage-steps{display:flex;gap:4px;margin:6px 0 4px}
+.stage-steps span{flex:1;font-family:var(--mono);font-size:11px;text-align:center;padding:3px 0;border:1px solid var(--rule);color:var(--muted)}
+.stage-steps span.on{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.stage-steps span.done{color:var(--ink)}
+.next-req{font-size:12px;color:var(--muted)}
+.bases{display:grid;gap:4px;list-style:none;margin:8px 0 0;padding:0}
+.bases li{display:flex;justify-content:space-between;gap:8px;font-size:13px;border-bottom:1px dotted var(--rule);padding-bottom:3px}
+.bases li .own{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:right}
+.bases li.prog{color:var(--muted)}
+.bases .cat{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-right:6px}
+.flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.flags span{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);padding:1px 6px;color:var(--muted)}
+.prez{display:grid;gap:8px;list-style:none;margin:0;padding:0}
+.prez li{display:grid;grid-template-columns:36px 1fr;gap:8px;align-items:center;font-size:13px}
+.prez li .t{font-family:var(--display);font-weight:600}
+.prez li .s{font-size:11.5px;color:var(--muted);font-family:var(--mono)}
+
+/* wire (headline band) */
+.wire{border-top:1.5px solid var(--ink);border-bottom:1px solid var(--rule);padding:6px 0;display:grid;gap:3px;min-height:34px}
+.wire p{margin:0;font-size:13.5px;display:flex;gap:10px}
+.wire p .d{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;padding-top:2px}
+.wire p:first-child{font-weight:600}
+.wire p:not(:first-child){color:var(--muted)}
+.wire .empty{color:var(--muted);font-size:13px}
+
+/* memo (card) */
+.memo{background:var(--sheet);border:1px solid var(--rule);box-shadow:0 1px 0 var(--rule),0 10px 30px -18px rgba(0,0,0,.35);padding:20px 22px 22px;position:relative;border-radius:2px;animation:slidein .35s ease both}
+@keyframes slidein{from{transform:translateY(8px);opacity:.35}to{transform:none;opacity:1}}
+.memo-head{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px dashed var(--rule);padding-bottom:8px;margin-bottom:12px}
+.stamp{display:inline-block;font-family:var(--display);font-weight:800;color:var(--stamp);border:2px solid var(--stamp);padding:1px 10px;transform:rotate(-3deg);letter-spacing:.12em;font-size:13px;border-radius:3px}
+.memo h2{font-size:clamp(24px,4vw,32px);letter-spacing:-.01em;margin-bottom:10px}
+.sit{margin:0 0 14px;font-size:14px;color:var(--muted);border-left:2px solid var(--rule);padding-left:10px}
+.sit b{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--muted);margin-right:6px;font-weight:700}
+.speaker{display:flex;gap:12px;align-items:flex-start;margin-top:12px}
+.speaker .sg{flex:none;width:42px;height:42px;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:21px;border:2px solid var(--ink);border-radius:2px}
+.speaker .who{font-size:13px}
+.speaker .who b{font-family:var(--display);font-size:15px}
+.speaker .who i{color:var(--muted);font-style:normal}
+.speaker blockquote{margin:4px 0 0;font-family:var(--display);font-size:clamp(17px,2.4vw,20px);line-height:1.55;font-weight:600}
+.rec{margin:12px 0 0;font-family:var(--mono);font-size:12px;color:var(--warn);display:grid;gap:2px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+@media (max-width:520px){.choices{grid-template-columns:1fr}}
+.opt{text-align:left;background:var(--paper);border:1.5px solid var(--ink);border-radius:2px;padding:12px 14px;display:grid;gap:8px;transition:transform .12s ease,border-color .12s}
+.opt:hover{border-color:var(--stamp);transform:translateY(-2px)}
+.opt .k{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.opt .lab{font-family:var(--display);font-weight:800;font-size:17px;line-height:1.35}
+.fxs{display:flex;flex-wrap:wrap;gap:4px}
+.fx{font-family:var(--mono);font-size:11.5px;padding:1px 6px;border:1px solid var(--rule);background:var(--sheet);white-space:nowrap}
+.fx.g{color:var(--good)} .fx.b{color:var(--alarm)}
+.fx.base{color:var(--stamp);border-color:var(--stamp)}
+.fx.pr{color:var(--sheet);background:var(--alarm);border-color:var(--alarm)}
+.fx.el{color:var(--ink)}
+
+/* result */
+.result .chosen{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.big-stamp{font-family:var(--display);font-weight:800;font-size:28px;color:var(--stamp);border:3px double var(--stamp);padding:2px 12px;transform:rotate(-6deg);border-radius:4px;animation:slam .35s cubic-bezier(.2,1.6,.4,1) both;letter-spacing:.1em}
+@keyframes slam{from{transform:rotate(-6deg) scale(1.6);opacity:.2}to{transform:rotate(-6deg) scale(1);opacity:1}}
+.result .chosen .lab{font-family:var(--display);font-weight:800;font-size:18px}
+.result .txt{font-family:var(--display);font-size:clamp(18px,2.6vw,22px);line-height:1.6;font-weight:600;margin:4px 0 16px}
+.changes{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0 0 12px;padding:0}
+.changes li{font-family:var(--mono);font-size:12px;border:1px solid var(--rule);padding:2px 8px;background:var(--paper)}
+.changes li.g b{color:var(--good)} .changes li.b b{color:var(--alarm)}
+.heads{border-top:1px solid var(--rule);padding-top:8px;display:grid;gap:4px}
+.heads p{margin:0;font-size:14px}
+.heads p::before{content:"■ ";color:var(--stamp)}
+.ext{font-family:var(--mono);font-size:12px;color:var(--alarm);margin:0 0 8px}
+.collapse-note{border:2px solid var(--alarm);color:var(--alarm);padding:10px 12px;margin:12px 0 0;font-family:var(--display);font-weight:800}
+.nextrow{display:flex;justify-content:flex-end;margin-top:16px}
+
+/* screens */
+.screen{max-width:760px;margin:0 auto;display:grid;gap:18px}
+.title-hero{padding-block:48px 8px;display:grid;gap:14px}
+.title-hero .hanja{font-family:var(--display);font-weight:800;font-size:clamp(72px,16vw,132px);line-height:1;letter-spacing:.04em}
+.title-hero .ko{font-family:var(--mono);letter-spacing:.4em;color:var(--muted)}
+.title-hero .thesis{font-family:var(--display);font-size:clamp(20px,3.4vw,26px);font-weight:600}
+.howto{display:grid;gap:6px;padding:0;margin:0;list-style:none;border-top:1px solid var(--rule);padding-top:12px}
+.howto li{font-size:14px;display:grid;grid-template-columns:22px 1fr}
+.howto li::before{content:"—";color:var(--muted)}
+.build-note{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.sheet{background:var(--sheet);border:1px solid var(--rule);padding:20px 22px;border-radius:2px}
+.field{display:grid;gap:6px}
+.field input[type=text]{font:inherit;font-family:var(--display);font-size:22px;font-weight:600;padding:8px 10px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:2px;width:100%;box-sizing:border-box}
+.gender{display:flex;gap:8px}
+.gender label{border:1.5px solid var(--rule);padding:6px 14px;cursor:pointer;border-radius:2px}
+.gender input{position:absolute;opacity:0;pointer-events:none}
+.gender input:checked + span{color:var(--stamp);font-weight:700}
+.gender label:has(input:checked){border-color:var(--stamp)}
+.notice{border-left:3px solid var(--stamp);padding:4px 0 4px 12px;display:grid;gap:4px}
+.notice b{font-family:var(--display)}
+.notice ul{margin:0;padding-left:18px;font-size:14px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl td{padding:5px 0;border-bottom:1px dotted var(--rule)}
+.tbl td:last-child{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tbl tr.sum td{border-top:1.5px solid var(--ink);border-bottom:none;font-weight:700;padding-top:8px}
+
+/* legacy & gallery */
+.legacy{display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:560px){.legacy{grid-template-columns:minmax(0,1fr)}}
+.legacy .portrait{width:120px;height:150px}
+.ttl-main{font-family:var(--display);font-weight:800;font-size:clamp(26px,4.6vw,36px);color:var(--stamp)}
+.ttl-sub{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ttl-sub span{font-size:12.5px;border:1px solid var(--rule);padding:1px 8px}
+.ttl-sub span b{font-family:var(--mono);font-weight:400;color:var(--muted);margin-right:4px;font-size:11px}
+.memgrid{display:grid;gap:5px;margin-top:10px}
+.mem{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:center;font-size:12.5px}
+.mem .bar2{height:8px;background:var(--wash);position:relative;border:1px solid var(--rule)}
+.mem .bar2::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--muted)}
+.mem .bar2 i{position:absolute;top:0;bottom:0}
+.mem .bar2 i.p{left:50%;background:var(--good)}
+.mem .bar2 i.n{right:50%;background:var(--alarm)}
+.textbook{font-family:var(--display);font-size:17px;line-height:1.75;font-weight:400;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:10px 0;margin:0}
+.decs{margin:0;padding-left:18px;font-size:14px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.gcard{background:var(--sheet);border:1px solid var(--rule);padding:14px;display:grid;gap:6px;align-content:start;border-radius:2px}
+.gcard .portrait{width:72px;height:90px}
+.gcard .nm{font-family:var(--display);font-weight:800;font-size:16px}
+.gcard .yrs{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.gcard .tt{font-family:var(--display);font-weight:800;color:var(--stamp);font-size:18px}
+.gcard .chg{font-size:12px;color:var(--warn);font-family:var(--mono)}
+.gcard .statue{font-size:12px;font-family:var(--mono);color:var(--muted)}
+.gcard .notes{font-size:12px;color:var(--muted);margin:0;padding-left:14px}
+.portrait{display:block;max-width:100%}
+.logbox{font-family:var(--mono);font-size:12px;white-space:pre-wrap;background:var(--paper);border:1px solid var(--rule);padding:10px;max-height:260px;overflow:auto;margin:8px 0}
+details summary{cursor:pointer;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.final-stage{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,40px)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+
+<div id="app"></div>
+
+<script>
+'use strict';
+/* ═══════════════════════ 데이터 ═══════════════════════ */
+const VERSION = 1;
+const SAVE_KEY = 'gukga-validation-v1';
+const START_YEAR = 1968;
+const TERM_CARDS = 8;
+const PRESIDENTS = 3;
+
+const FAC = ['군부','재계','서민','광장','구세력','변방'];
+const FAC_GLYPH = {군부:'軍',재계:'財',서민:'民',광장:'廣',구세력:'舊',변방:'邊'};
+const FAC_WHO = {
+  군부:'장교단, 참모본부. 질서, 예산, 면책을 원한다.',
+  재계:'재벌, 지주, 외국 자본. 성장, 특혜, 조용한 노조를 원한다. 적대: 자본 탈출(카드마다 경제 -2).',
+  서민:'노동자, 농민, 도시 빈민. 빵값, 일자리, 아이들 급식을 원한다. 적대: 폭동(카드마다 민심 -3). 열광: 민심 하락폭 절반.',
+  광장:'학생, 기자, 지식인. 자유, 진실, 처벌을 원한다. 적대: 외신 비판(카드마다 국제 -2). 열광: 언론이 실수를 덮는다(부패도 상승).',
+  구세력:'전 정권 지지층, 종교계, 지방 유지. 전통, 체면, 그때의 영광을 원한다.',
+  변방:'산악민족, 북부, 소수민족. 땅, 자치, 잊히지 않기를 원한다.',
+};
+const STATS = [['min','민심'],['eco','경제'],['intl','국제신뢰도'],['cor','부패도']];
+const SN = {min:'민심',eco:'경제',intl:'국제신뢰도',cor:'부패도'};
+const HEAD = {
+  군부:['장교 클럽에서 대통령 사진이 내려갔다.','국군의 날 사열에서 박수가 길었다.'],
+  재계:['그룹 세 곳이 투자 계획을 보류했다.','회장단이 오찬 초청에 전원 참석했다.'],
+  서민:['시장 상인들이 대통령 달력을 떼어냈다.','택시 기사들이 라디오 연설을 끝까지 틀었다.'],
+  광장:['대학가에 대자보가 붙기 시작했다.','신문 사설이 처음으로 ‘용기’라는 단어를 썼다.'],
+  구세력:['대주교가 성탄 미사 초청을 취소했다.','지방 유지들이 기념비 모금을 시작했다.'],
+  변방:['북부 도로에 검문소가 생겼다. 반군의 것이었다.','산악 마을 학교에 대통령 사진이 걸렸다.'],
+};
+const SUMMON = {
+  군부:n=>`“${n}은 장교들을 이렇게 대하지 않았다.”`,
+  재계:n=>`회장단 오찬에서 ${n} 시절 이야기가 나왔다.`,
+  서민:n=>`시장 상인들이 ${n}의 달력을 다시 걸었다.`,
+  광장:n=>`대자보에 ${n}의 연설 한 구절이 인용됐다.`,
+  구세력:n=>`대주교가 강론에서 ${n}의 이름을 불렀다.`,
+  변방:n=>`북부 마을 회관에 ${n}의 사진이 다시 걸렸다.`,
+};
+const TITLES = {
+  군부:['강철의 손','군을 판 사람'], 재계:['경제 대통령','곳간을 턴 사람'], 서민:['우리 대통령','저들의 대통령'],
+  광장:['민주주의의 기적','독재자'], 구세력:['나라의 어른','뿌리를 뽑은 사람'], 변방:['처음 우리를 본 사람','수도의 대통령'],
+};
+const STATE_LV = {적대:0,불만:1,관망:2,호의:3,열광:4};
+const MOOD = {적대:'눈을 마주치지 않고',불만:'굳은 얼굴로',관망:'담담하게',호의:'웃으며',열광:'두 손을 모으고'};
+const SPK = {
+  '비서실장':{f:'재계',g:'秘'}, '재무장관':{f:null,g:'庫',m:'서류를 넘기며'}, '참모총장':{f:'군부',g:'參'},
+  '내무장관':{f:'구세력',g:'內'}, '민정수석':{f:'서민',g:'政'}, '외신 기자':{f:'광장',g:'記'},
+  '경찰청장':{f:'구세력',g:'警'}, '재벌 회장':{f:'재계',g:'會'}, '산업부 장관':{f:'재계',g:'産'},
+  '선거대책본부장':{f:null,g:'選',m:'시계를 보며'}, '통계청장':{f:null,g:'統',m:'안경을 고쳐 쓰며'},
+  '법무장관':{f:null,g:'法',m:'서류철을 펼치며'}, '수도 시장':{f:'구세력',g:'市'},
+  '새 비서실장':{f:null,g:'秘',m:'수첩을 펴며'}, '체육부 장관':{f:'서민',g:'體'},
+  '공보비서관':{f:null,g:'報',m:'두 장을 나란히 놓으며'}, '외무장관':{f:null,g:'外',m:'메뉴판을 내밀며'},
+};
+const BASES = {
+  곡물:{n:'곡물 비축망',cat:'생존',fx:'식량 위기 피해 절반'},
+  치안:{n:'치안 회복',cat:'생존',fx:'매 임기 민심 +3'},
+  통화:{n:'통화 안정',cat:'생존',fx:'경제 위기 피해 -5'},
+  항구:{n:'항구',cat:'산업',fx:'매 임기 경제 +2, 국제 +2'},
+  제철소:{n:'제철소',cat:'산업',fx:'매 임기 경제 +3, 재계 +5'},
+  공단:{n:'수출 공단',cat:'산업',fx:'매 임기 경제 +4, 국제 +2. 공장 사고 위험'},
+  국립대학:{n:'국립대학',cat:'제도',fx:'세 임기 뒤부터 경제 +3, 광장 +5'},
+  노동감독청:{n:'노동감독청',cat:'제도',fx:'공장 사고 확률 절반'},
+  법원:{n:'독립 법원',cat:'제도',fx:'매 임기 부패도 -3'},
+  급식:{n:'학교 급식',cat:'특수',fx:'매 임기 서민 +5'},
+};
+const CAT_TOTAL = {생존:3,산업:5,제도:6};
+const STAGES = ['생존','산업화','제도화','문턱'];
+const STAGE_NICK = ['버티는 나라','공장의 나라','문턱 앞의 나라','거의 다 온 나라'];
+const STAGE_REQ = [{cat:'생존',need:2,eco:35},{cat:'산업',need:3,eco:55},{cat:'제도',need:4,eco:65,cor:45}];
+const ARANDO_FAC = {군부:0,재계:0,서민:30,광장:0,구세력:30,변방:0};
+const COLLAPSE = ['국가 부도','혁명','국제 고립','포획된 국가'];
+const NAMES = {
+  남:['마르코 베일','에밀리오 산타나','라울 페드로사','안드레스 몬테로','호세 알바레스','루카스 오르티스','훌리오 카스테야노','펠리페 아르세','토마스 비달','이그나시오 루나'],
+  여:['이사벨 오르테가','루시아 마르케스','카밀라 레예스','엘레나 소사','마리아나 벨로소','테레사 아길라르','아나 페랄타','클라라 몬테스','비올레타 차베스','소피아 알칸타라'],
+};
+
+/* ═══════════════════════ 유틸 ═══════════════════════ */
+let G = null;
+let ACC = null;
+const R = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick = a=>a[Math.floor(Math.random()*a.length)];
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function josa(w,a,b){const c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+a;return w+(((c-0xAC00)%28)?a:b);}
+const up = (arr,v)=>Object.fromEntries(arr.map(f=>[f,v]));
+function fstate(v){return v<=-60?'적대':v<=-20?'불만':v<20?'관망':v<60?'호의':'열광';}
+const ci = ()=>G.pres.length-1;
+const cp = ()=>G.pres[ci()];
+const ord = i=>`제${i+1}대`;
+const pn = i=>`${ord(i)} 대통령 ${G.pres[i].name}`;
+const yearOf = h=>START_YEAR+Math.floor(h/2);
+const dateLabel = (h=G.half)=>`${yearOf(h)}년 ${h%2?'하반기':'상반기'}`;
+const has = k=>!!G.flags[k];
+const hasBase = k=>!!G.bases[k];
+const isFog = ()=>G.st.cor>=60 && !hasBase('반부패청');
+const ecoShown = ()=>isFog()?clamp(G.st.eco+G.fog,0,100):G.st.eco;
+
+function st(o){for(const k in o){if(!o[k])continue;if(ACC)ACC.st[k]=(ACC.st[k]||0)+o[k];else G.st[k]=clamp(G.st[k]+o[k],0,100);}}
+function fac(o){for(const k in o){if(!o[k])continue;if(ACC)ACC.fac[k]=(ACC.fac[k]||0)+o[k];else G.cur.fac[k]=clamp(G.cur.fac[k]+o[k],-100,100);}}
+function commit(){const a=ACC;ACC=null;if(a.st.min<0&&G.cur.fac.서민>=60)a.st.min=Math.round(a.st.min/2);st(a.st);fac(a.fac);}
+function headline(h){G.news.unshift({t:dateLabel(),h});if(G.news.length>60)G.news.length=60;if(G._heads)G._heads.push(h);}
+function mem(i,f,d,why){const P=G.pres[i];if(!P||!P.mem)return;P.mem[f]=clamp(P.mem[f]+d,-100,100);P.notes.push(`${why} · ${f} ${d>0?'+':''}${d}`);if(P.notes.length>6)P.notes.shift();}
+function setFlag(k){G.flags[k]={o:ci(),h:G.half};}
+function unflag(k){delete G.flags[k];}
+function addBase(k,o=ci()){
+  if(G.bases[k])return;
+  G.bases[k]={o,h:G.half,term:ci()};
+  delete G.prog[k];
+  if(o!=null&&G.pres[o]){G.pres[o].built.push(k);headline(`${BASES[k].n} 준공. 머릿돌에 ${pn(o)}의 이름이 새겨졌다.`);}
+  else headline(`${BASES[k].n} 준공.`);
+}
+function loseBase(k,why){if(!G.bases[k])return;delete G.bases[k];headline(`${josa(BASES[k].n,'을','를')} 잃었다. ${why||''}`.trim());}
+function prog(k,n){G.prog[k]=(G.prog[k]||0)+n;if(G.prog[k]>=2){addBase(k);return true;}return false;}
+function queue(id,delay,prm){G.queue.push({id,due:G.turn+delay,prm:prm||null});}
+function rec(spk,line){(G.records[spk]=G.records[spk]||[]).push(line);}
+function catCount(cat){return Object.keys(G.bases).filter(k=>BASES[k]&&BASES[k].cat===cat).length;}
+
+function effFac(o){
+  const out={...(o.fac||{})};
+  if(o.pr!=null&&o.pr!==ci()&&G.pres[o.pr]&&G.pres[o.pr].mem){
+    const m=G.pres[o.pr].mem;
+    for(const f of FAC){
+      const d=out[f]||0;
+      if(d<0&&m[f]>=50)out[f]=Math.round(d*(m[f]>=80?2:1.5));
+      if(m[f]<=-50)out[f]=(out[f]||0)+10;
+    }
+  }
+  return out;
+}
+function revealFraud(){
+  if(!has('분식'))return;
+  const f=G.flags.분식;
+  st({intl:-25});fac({광장:-20});
+  if(f.o!==ci())['광장','서민','변방'].forEach(x=>mem(f.o,x,-20,'성장률 분식 공개'));
+  headline(`통계청 원본이 공개됐다. ${yearOf(f.h)}년 성장률은 3%였다.`);
+  unflag('분식');
+}
+
+/* ═══════════════════════ 카드 ═══════════════════════ */
+const POLICY = {
+  비상조치:{n:'비상조치',love:['서민','구세력'],hate:['광장'],endSt:{intl:5,min:-5}},
+  급식:{n:'무상 급식',love:['서민'],hate:['재계'],endSt:{eco:5}},
+  긴축:{n:'IMF 긴축',love:['재계'],hate:['서민'],endSt:{eco:-5,min:5}},
+  봉제공장:{n:'봉제공장 12시간 근무',love:['재계'],hate:['광장'],endSt:{eco:-5}},
+};
+const INVEST = {
+  노동감독청:{fac:{서민:10,재계:-10},t1:'감독관 첫 기수 40명이 임명됐다.',t2:'노동감독청 현판이 걸렸다. 첫 달 점검 목록 맨 위에 수출 공단이 있었다.'},
+  국립대학:{fac:{광장:10,구세력:-10},t1:'수도 외곽 부지에 측량 말뚝이 박혔다. 신학교 지원금은 그만큼 줄었다.',t2:'국립대학 첫 입학식이 열렸다. 신입생의 3분의 1이 지방 출신이었다.'},
+  통화:{label:'통화 안정 기금',st:{eco:-3},fac:{재계:10,서민:-10},t1:'중앙은행 금고에 첫 외화 예치금이 들어갔다. 공공요금 인상안이 함께 발표됐다.',t2:'환율 변동 폭이 처음으로 한 달 내내 2% 안쪽에 머물렀다.'},
+  법원:{label:'판사 보호',fac:{광장:10,군부:-10},cond:()=>has('법대로'),t1:'판사 관사에 경비 초소가 생겼다.',t2:'독립 법원법이 공포됐다. 첫 사건은 국방부 토지 소송이었다.'},
+};
+const APPEASE = {
+  군부:['장교 봉급 인상',{광장:-10},'국방부 급여 명세서에 새 항목이 생겼다.'],
+  재계:['수출 보조금',{서민:-10},'수출 업체 마흔 곳이 보조금을 신청했다. 서른아홉 곳이 받았다.'],
+  서민:['빵값 보조',{재계:-10},'빵 한 덩이 값이 작년 가격으로 돌아갔다.'],
+  광장:['대학 장학금 확대',{구세력:-10},'장학생 명단이 대학 게시판에 붙었다. 신학교 게시판에는 아무것도 붙지 않았다.'],
+  구세력:['대성당 보수 지원',{광장:-10},'대성당 첨탑에 비계가 올라갔다.'],
+  변방:['북부 도로 보수',{서민:-10},'북부 도로의 구덩이 1,200개가 메워졌다. 수도 버스 노선 하나가 줄었다.'],
+};
+const QUESTIONS = {
+  개표_조작:['세 개 주의 개표 결과는 왜 자정에 들어왔습니까?',['집계가 늦었습니다.',{재계:10,광장:-20}],['그 질문에는 답하지 않겠습니다.',{구세력:10,광장:-10}]],
+  분식:['그해 성장률 6%, 직접 확인하셨습니까?',['재무장관의 보고였습니다.',{재계:10,광장:-10}],['다시 확인하겠습니다.',{광장:10,재계:-10}]],
+  제철소_독점:['용광로에서 다친 노동자들의 이름을 아십니까?',['명단을 보고받았습니다.',{서민:10,재계:-10}],['제철소는 3만 가구를 먹여 살립니다.',{재계:10,서민:-10}]],
+  급식:['그 급식값, 결국 다음 세대가 갚는 것 아닙니까?',['그 아이들이 다음 세대입니다.',{서민:10,재계:-10}],['재원은 의회가 정할 일입니다.',{재계:10,광장:-10}]],
+  비상조치:['교도소에 있는 사람 중 무고한 사람은 몇 명입니까?',['모릅니다. 조사를 지시했습니다.',{광장:10,구세력:-10}],['거리는 안전해졌습니다.',{서민:10,광장:-10}]],
+  조용한_퇴장:['물러난 장관의 해외 계좌에 대해 알고 계셨습니까?',['몰랐습니다.',{구세력:10,광장:-10}],['알았습니다. 그해에는 창고가 먼저였습니다.',{광장:10,재계:-10}]],
+  긴축:['공무원 20%를 줄인 날, 그 사람들은 어디로 갔습니까?',['민간이 흡수했습니다.',{재계:10,서민:-10}],['아직 많은 수가 일자리를 찾고 있습니다.',{서민:10,재계:-10}]],
+  지불유예:['채권단은 당신을 ‘빚을 떼먹은 대통령’이라 부릅니다.',['빵값이 먼저였습니다.',{서민:10,재계:-10}],['협상은 다음 정부가 이어 갈 겁니다.',{재계:10,구세력:-10}]],
+  봉제공장:['공단 노동자들이 하루 몇 시간 일하는지 아십니까?',['열두 시간입니다. 알고 있었습니다.',{광장:10,재계:-10}],['3만 명이 월급을 받습니다.',{재계:10,광장:-10}]],
+  _:['임기 중 가장 후회하는 결정은 무엇입니까?',['없습니다.',{구세력:10,광장:-10}],['많습니다.',{광장:10,군부:-10}]],
+};
+
+function statueTarget(){
+  let best=null,bs=0;
+  G.pres.forEach((P,i)=>{
+    if(i===ci()||!P.mem)return;
+    const v=FAC.map(f=>P.mem[f]),mx=Math.max(...v),mn=Math.min(...v);
+    const ok=P.statue==='removed'?mx>=40:(mx>=50&&mn<=-50);
+    if(ok&&mx-mn>bs){bs=mx-mn;best=i;}
+  });
+  return best;
+}
+
+const C = {
+/* ── 생존 단계 ── */
+jangwan:{type:'딜레마',spk:'비서실장',pool:1,make:()=>({
+  title:'장관 셋',
+  sit:'그는 북부 곡물 창고 열두 곳을 쥐고 있다. 대신할 유통망은 없다.',
+  line:'장관 셋이 국고를 빼돌렸습니다. 하나는 북부 곡물 유통을 맡고 있습니다. 재판이 열리면 창고를 닫겠다고 합니다.',
+  L:{label:'공개 재판',st:{cor:-15,intl:10},fac:{광장:20,재계:-10},flag:'창고_봉쇄',rep:'장관 공개 재판',hist:'장관 셋을 공개 재판에 세웠다',
+    run(){queue('granary',2);if(hasBase('곡물'))return '재판은 생중계됐다. 창고는 닫혔지만 비축분으로 겨울을 났다.';st({eco:-10});fac({변방:-10});return '재판은 생중계됐다. 창고는 닫혔다. 그해 겨울 북부의 빵값이 두 배가 됐다.';}},
+  R:{label:'조용히 사임시키기',st:{cor:10,eco:5},fac:{재계:10,구세력:10,광장:-10},flag:'조용한_퇴장',rep:'장관의 조용한 퇴장',
+    res:'그는 명예롭게 물러났다. 창고 관리는 그의 조카가 맡았다.'},
+})},
+imf:{type:'위기',spk:'재무장관',
+  onShow(){
+    if(G.fog){headline(`IMF 실사단이 실제 수치를 공개했다. 경제 지수는 보고보다 ${G.fog>0?'낮은':'높은'} ${G.st.eco}였다.`);G.fog=0;}
+    revealFraud();
+    let cush=0;
+    const T={통화:'통화 안정 기금이 환율 폭락을 하루 늦췄다.',제철소:'제철소 수출 대금이 외환 보유고를 받쳤다.',공단:'수출 공단의 달러가 수입 대금을 막았다.'};
+    for(const k of ['통화','제철소','공단']){
+      if(!hasBase(k))continue;cush+=5;const o=G.bases[k].o;
+      if(o!=null&&o!==ci()){mem(o,'재계',15,`${BASES[k].n}이 위기를 막음`);mem(o,'서민',15,`${BASES[k].n}이 위기를 막음`);headline(`${T[k]} 사람들은 ${pn(o)} 이야기를 다시 꺼냈다.`);}
+      else headline(T[k]);
+    }
+    if(cush)st({eco:Math.min(cush,10)});
+  },
+  make:()=>({
+  title:'IMF',
+  sit:'외채의 70%가 6주 안에 만기다. 조건을 협상할 시간은 없다.',
+  line:'IMF 자금입니다. 조건은 공무원 20% 감축과 연료 보조금 폐지입니다.',
+  L:{label:'수락',st:{eco:25,intl:15,min:-20},fac:{재계:20,서민:-20,구세력:-10},base:'통화',flag:'긴축',rep:'IMF 조건 수락',hist:'IMF 조건을 받아들였다',
+    run(){addBase('통화');queue('fuel',3);return '환율이 진정됐다. 실업자 통계는 집계 방식이 바뀌었다.';}},
+  R:{label:'지불 유예 선언',st:{eco:-15,intl:-20,min:15},fac:{서민:10,구세력:20,재계:-20},flag:'지불유예',rep:'지불 유예 선언',hist:'지불 유예를 선언했다',
+    run(pre){queue('restructure',2);if(pre.intl>=45){st({eco:10});return '채권단이 다시 협상장에 앉았다. 이번엔 우리 쪽 시계로.';}return '이튿날, 밀가루를 실은 배가 항구 밖에서 멈췄다.';}},
+})},
+emergency:{type:'딜레마',spk:'경찰청장',pool:1,cond:()=>!has('비상조치'),make:()=>({
+  title:'비상조치',
+  sit:'법원은 갱단 사건의 절반을 증거 부족으로 기각한다. 지난달 판사 셋이 살해됐다.',
+  line:'영장 없이 체포할 권한을 주시면 반년 안에 거리를 비우겠습니다.',
+  L:{label:'선포',st:{min:20,intl:-15,cor:10},fac:{서민:20,구세력:10,광장:-20},flag:'비상조치',rep:'비상조치 선포',hist:'비상조치를 선포했다',
+    run(pre){if(pre.cor<=40){addBase('치안');return '살인율이 절반 아래로 떨어졌다. 교도소가 모자랐다.';}st({min:-10});return '체포는 늘었다. 두목들은 해외로 나갔다. 잡혀 온 건 대부분 말단이었다.';}},
+  R:{label:'법대로',st:{min:-10,intl:10},fac:{광장:10,서민:-10},flag:'법대로',rep:'비상조치 거부',
+    res:'시장 상인들은 그해에도 보호비를 냈다.'},
+})},
+/* ── 산업화 단계 ── */
+steel:{type:'기회',spk:'재벌 회장',pool:1,cond:()=>!G.once.steel&&!hasBase('제철소'),make:()=>({
+  title:'제철소',
+  sit:'국영으로 지을 예산은 10년 뒤에나 생긴다. 회장의 자본 말고는 길이 없다.',
+  line:'제철소를 짓겠습니다. 조건은 30년 독점, 그리고 노조 없는 공장입니다.',
+  L:{label:'수락',st:{eco:20,cor:15,min:-5},fac:{재계:20,군부:10,서민:-10,광장:-10},base:'제철소',flag:'제철소_독점',rep:'제철소 독점 계약',hist:'제철소를 세웠다',
+    run(){G.once.steel=1;addBase('제철소');if(Math.random()<0.35)queue('union',3);return hasBase('노동감독청')?'용광로에 불이 들어왔다. 첫해 사고 보고서는 두 쪽이었다.':'용광로에 불이 들어왔다. 첫해 사고 보고서는 제출되지 않았다.';}},
+  R:{label:'거절',st:{eco:-5,min:5},fac:{서민:10,광장:10,재계:-20},flag:'제철소_거절',rep:'제철소 제안 거절',hist:'재벌의 제철소 제안을 거절했다',
+    run(){G.once.steel=1;},res:'회장은 이웃 나라로 갔다.'},
+})},
+union:{type:'청구서',spk:'민정수석',cond:()=>has('제철소_독점')&&!has('노조_인정'),make:()=>{
+  const o=G.bases.제철소?G.bases.제철소.o:null;const pr=(o!=null&&o!==ci())?o:null;
+  return {
+  title:'제철소 노조',
+  sit:'독점 계약서에 노조 금지 조항이 있다. 계약을 깨면 회장은 위약금으로 제철소 지분을 요구한다.',
+  line:'제철소 노동자 4천 명이 노조 결성 신고서를 냈습니다.',
+  L:{label:'신고 수리',st:{eco:-10,intl:5},fac:{서민:20,광장:10,재계:-20},pr,flag:'노조_인정',rep:'제철소 노조 인정',hist:'제철소 노조를 인정했다',
+    run(){if(pr!=null)mem(pr,'재계',10,'제철소 노조 인정');queue('lawsuit',2);},res:'신고서에 도장이 찍혔다. 회장은 그날 저녁 변호사 열두 명을 불렀다.'},
+  R:{label:'반려',st:{eco:5},fac:{재계:10,서민:-20,광장:-10},rep:'제철소 노조 반려',
+    run(){queue('strike',1);},res:'신고서는 반려됐다. 이튿날 아침, 용광로 앞에 작업화 4천 켤레가 놓여 있었다.'},
+}}},
+line30k:{type:'딜레마',spk:'산업부 장관',pool:1,cond:()=>!G.once.line&&!hasBase('공단'),make:()=>({
+  title:'3만 명의 줄',
+  sit:'회사는 근무 조건을 바꾸지 않겠다고 했다. 이웃 나라가 같은 조건으로 유치 경쟁 중이다.',
+  line:'의류 회사가 공장 열 곳을 짓겠답니다. 주 6일, 하루 12시간 근무 허용이 조건입니다. 지원자는 벌써 3만 명입니다.',
+  L:{label:'수락',st:{eco:20,min:5,intl:-5},fac:{재계:10,서민:10,광장:-20},base:'공단',flag:'봉제공장',rep:'봉제공장 유치',hist:'수출 공단을 열었다',
+    run(){G.once.line=1;addBase('공단');},res:'3만 명이 첫 월급을 받았다.'},
+  R:{label:'거부',st:{eco:-5,min:-5,intl:5},fac:{광장:10,서민:-10,재계:-10},rep:'봉제공장 거부',
+    run(){G.once.line=1;},res:'공장은 국경 너머에 섰다. 지원서 3만 장은 반송됐다.'},
+})},
+freelunch:{type:'딜레마',spk:'선거대책본부장',cond:()=>!has('급식')&&!has('급식_공약')&&!G.cur.lunchFund,make:()=>({
+  title:'무상 급식',
+  sit:'선거까지 넉 달. 상대 후보가 다음 주에 같은 공약을 발표한다는 정보가 들어왔다.',
+  line:'전국 무상 급식을 먼저 발표하면 이깁니다. 재원은 아직 없습니다.',
+  L:{label:'발표',st:{min:15},fac:{서민:20,재계:-10},elec:10,flag:'급식_공약',rep:'무상 급식 공약',hist:'무상 급식을 공약했다',
+    run(){G.elecMod=10;G.lunch='ours';},res:'다음 날 지지율이 9포인트 올랐다. 재무장관은 오후 회의에 오지 않았다.'},
+  R:{label:'미룬다',st:{eco:5,min:-5},fac:{재계:10,서민:-10},elec:-10,rep:'급식 공약 보류',
+    run(){G.elecMod=-10;G.lunch='theirs';},res:'일주일 뒤, 상대 후보가 같은 공약을 발표했다.'},
+})},
+lunchfund:{type:'필수',spk:'재무장관',done(){G.cur.budgets++;},make:()=>({
+  title:'급식 재원',
+  sit:'둘 중 하나가 아니면 급식은 시작되지 않는다.',
+  line:'증세입니까, 국채입니까.',
+  L:{label:'증세',st:{eco:-5},fac:{재계:-20,서민:10},flag:'급식',rep:'급식 증세',hist:'증세로 무상 급식을 시작했다',
+    run(){unflag('급식_공약');},res:'첫 급식은 9월에 나왔다. 그달 고급 승용차 판매량이 줄었다.'},
+  R:{label:'국채',st:{eco:-15,intl:-5},fac:{서민:10},flag:'급식',rep:'급식 국채',hist:'국채로 무상 급식을 시작했다',
+    run(){unflag('급식_공약');},res:'첫 급식은 9월에 나왔다. 상환일은 30년 뒤로 적혔다.'},
+})},
+/* ── 제도화 단계 · 유산 ── */
+lunchcut:{type:'유산',spk:'재무장관',legacy:1,cond:()=>has('급식')&&G.flags.급식.o!==ci()&&!hasBase('국립대학'),make:()=>{
+  const o=G.flags.급식.o;
+  return {
+  title:'급식 축소',
+  sit:'국립대학을 지을 돈이 급식 예산뿐이다. 국립대학 없이는 제도화를 넘을 수 없다.',
+  line:'급식 예산이 교육 예산의 3분의 1입니다.',
+  L:{label:'축소, 대학으로',st:{eco:5},fac:{서민:-20,광장:10},pr:o,base:'국립대학',rep:'급식 축소',hist:'급식 예산을 대학으로 돌렸다',
+    run(){const loved=G.pres[o].mem.서민>=50;unflag('급식');prog('국립대학',1);mem(o,'서민',10,'급식 축소');
+      if(loved){st({min:-10});return `급식실 앞에 ${pn(o)}의 사진이 붙었다.`;}return '급식실 앞에 전임 대통령의 사진이 붙었다.';}},
+  R:{label:'유지',st:{eco:-5},fac:{서민:10},rep:'급식 유지',res:'대학 신축 부지는 다시 공터가 됐다.'},
+}}},
+statue:{type:'유산',spk:'수도 시장',legacy:1,cond:()=>statueTarget()!=null,prm:()=>({i:statueTarget()}),make:(prm)=>{
+  const i=prm.i,P=G.pres[i];
+  const lov=FAC.filter(f=>P.mem[f]>=30),hat=FAC.filter(f=>P.mem[f]<=-30);
+  if(P.statue==='removed')return {
+    title:'동상 재건립',
+    sit:'받침대는 철거 뒤에도 광장에 남아 있다. 시의회는 이번에도 결정을 대통령에게 넘겼다.',
+    line:`${pn(i)} 동상 재건립 청원이 30만 명을 넘었습니다.`,
+    L:{label:'재건립',fac:{...up(lov,20),...up(hat,-20)},rep:`${ord(i)} 동상 재건립`,hist:`${ord(i)} 대통령의 동상을 다시 세웠다`,
+      run(){P.statue='standing';P.rebuilt=(P.rebuilt||0)+1;lov.forEach(f=>mem(i,f,10,'동상 재건립'));},res:'동상은 같은 받침대 위에 다시 섰다. 이번에는 울타리가 함께 섰다.'},
+    R:{label:'받침대를 비워 둔다',fac:{...up(lov,-10),...up(hat,10)},rep:'동상 재건립 거부',res:'받침대 위에 누군가 꽃을 올려 두었다. 다음 날 아침에는 없었다.'},
+  };
+  return {
+    title:'동상',
+    sit:'시의회가 반으로 갈려 결정을 대통령에게 넘겼다.',
+    line:`광장에 있는 ${pn(i)} 동상 말입니다. 철거 청원이 40만 명을 넘었습니다.`,
+    L:{label:'철거',fac:{...up(hat,20),...up(lov,-20)},pr:i,rep:`${ord(i)} 동상 철거`,hist:`${ord(i)} 대통령의 동상을 철거했다`,
+      run(){P.statue='removed';P.removed=(P.removed||0)+1;lov.forEach(f=>mem(i,f,10,'동상 철거'));hat.forEach(f=>mem(i,f,-10,'동상 철거'));},res:'크레인은 새벽에 왔다. 받침대는 남았다.'},
+    R:{label:'둔다',fac:{...up(lov,10),...up(hat,-20)},rep:`${ord(i)} 동상 존치`,
+      run(){P.statue='standing';},res:'청원은 위원회로 넘어갔다. 동상 앞에 꽃과 계란이 함께 놓였다.'},
+  };
+}},
+/* ── 정권 교체 · 신뢰 ── */
+succession:{type:'필수',spk:'새 비서실장',
+  prm(){const pi=ci()-1,P=G.pres[pi];const w=k=>Math.max(0,...P.decisions.filter(d=>d.flag===k).map(d=>d.w));
+    const c=Object.keys(POLICY).filter(k=>has(k)&&G.flags[k].o===pi).sort((a,b)=>w(b)-w(a));return {k:c[0]||null};},
+  make:(prm)=>{
+  const pi=ci()-1;
+  if(prm.k){const po=POLICY[prm.k];return {
+    title:'계승',
+    sit:'전임자의 사람들이 아직 부처 곳곳에 있다. 이어가거나, 정리하거나.',
+    line:`전임 대통령의 ${po.n} 정책, 어떻게 하시겠습니까?`,
+    L:{label:'잇는다',fac:{...up(po.love,10),...up(po.hate,-10)},rep:`${po.n} 계승`,
+      run(){po.love.forEach(f=>mem(pi,f,10,`${po.n} 계승`));},res:'취임사에 전임자의 이름이 한 번 나왔다.'},
+    R:{label:'정리한다',st:po.endSt,fac:{...up(po.love,-10),...up(po.hate,10)},pr:pi,rep:`${po.n} 정리`,hist:`전임자의 ${po.n} 정책을 정리했다`,
+      run(){unflag(prm.k);po.love.forEach(f=>mem(pi,f,10,`${po.n} 폐지`));},res:'취임사에 전임자의 이름은 나오지 않았다.'},
+  };}
+  return {
+    title:'계승',
+    sit:'전임자의 사람들이 아직 부처 곳곳에 있다. 비서실 인사는 취임 첫 주에 끝내야 한다.',
+    line:'전임 비서실장과 참모들을 어떻게 하시겠습니까?',
+    L:{label:'유임',fac:{구세력:10,광장:-10},rep:'전임 참모 유임',res:'취임식 날 비서실 명패는 하나도 바뀌지 않았다.'},
+    R:{label:'경질',fac:{광장:10,재계:-10},rep:'전임 참모 경질',run(){G.records={};},res:'취임 첫 주에 비서관 열네 명이 짐을 쌌다. 그들의 보고 기록도 함께 나갔다.'},
+  };
+}},
+reports:{type:'신뢰',spk:'재무장관',pool:1,prm:()=>({t3:isFog()?G.fog>0:Math.random()<0.25}),make:(prm)=>{
+  const truth=prm.t3?3:6;
+  const log=()=>{rec('재무장관',`성장률 “6%” → 실제 ${truth}%`);rec('통계청장',`성장률 “3%” → 실제 ${truth}%`);};
+  return {
+  title:'두 개의 보고서',
+  sit:'국제 신용평가가 다음 주다. 발표할 수치는 하나여야 한다.',
+  dual:[['재무장관','올해 성장률은 6%입니다.'],['통계청장','3%입니다.']],
+  L:{label:'6% 발표',st:{intl:10},fac:{재계:10},rep:'성장률 6% 발표',
+    run(){log();if(prm.t3)setFlag('분식');},res:'신용평가 보고서에 ‘6.0%’가 그대로 실렸다.'},
+  R:{label:'3% 발표',st:{eco:-5,intl:5},fac:{광장:10,재계:-10},rep:'성장률 3% 발표',
+    run(){log();},res:'통계청장은 그 주말 처음으로 일찍 퇴근했다.'},
+}}},
+budget:{type:'필수',spk:'재무장관',done(){G.cur.budgets++;},
+  prm(){
+    const avail=Object.keys(INVEST).filter(k=>!hasBase(k)&&(!INVEST[k].cond||INVEST[k].cond()));
+    const inprog=avail.filter(k=>G.prog[k]);
+    const k=inprog.length?pick(inprog):(avail.length?pick(avail):null);
+    const lo=Math.min(...FAC.map(f=>G.cur.fac[f]));
+    const f=pick(FAC.filter(x=>G.cur.fac[x]===lo));
+    let f2=null;if(!k){const rest=FAC.filter(x=>x!==f);f2=pick(rest);}
+    return {k,f,f2};
+  },
+  make:(prm)=>{
+    const ap=f=>{const a=APPEASE[f];return {label:a[0],fac:{[f]:20,...a[1]},rep:a[0],res:a[2]};};
+    let L;
+    if(prm.k){const iv=INVEST[prm.k],nm=iv.label||BASES[prm.k].n,p=(G.prog[prm.k]||0)+1;
+      L={label:`${nm} ${p>=2?'완공':'착공'} (진행 ${p}/2)`,st:iv.st,fac:iv.fac,base:prm.k,baseProg:p,rep:`${BASES[prm.k].n} 투자`,hist:p>=2?`${josa(BASES[prm.k].n,'을','를')} 세웠다`:null,
+        run(){return prog(prm.k,1)?iv.t2:iv.t1;}};
+    } else L=ap(prm.f2);
+    return {
+      title:'예산',
+      sit:'의회가 승인한 예비비는 한 항목분이다. 나머지는 이미 이자와 연금으로 묶여 있다.',
+      line:'올해 예비비로는 하나만 됩니다.',
+      L, R:ap(prm.f),
+    };
+}},
+/* ── 연쇄 · 청구서 (기획서 부록의 재작성 대기 목록, 검증판용 초안) ── */
+granary:{type:'연쇄',spk:'내무장관',cond:()=>has('창고_봉쇄'),make:()=>({
+  title:'북부 창고',
+  sit:hasBase('곡물')?'비축분은 이번 겨울까지만 버틴다. 창고 열쇠는 장관의 가족이 갖고 있고, 법원 명령은 석 달이 걸린다.':'북부의 빵값은 이미 두 배다. 창고 열쇠는 장관의 가족이 갖고 있고, 법원 명령은 석 달이 걸린다.',
+  line:'북부 창고 열두 곳이 아직 닫혀 있습니다. 군을 보내면 내일 열 수 있습니다.',
+  L:{label:'군을 보내 강제로 연다',st:{min:5},fac:{군부:10,구세력:10,변방:-10,광장:-10},rep:'창고 강제 개방',
+    run(){unflag('창고_봉쇄');},res:'창고 문은 사흘 만에 열렸다. 경비병 둘과 마을 청년 하나가 다쳤다.'},
+  R:{label:'장관 가족과 협상한다',st:{cor:10},fac:{재계:10,변방:10,광장:-20},rep:'장관 가족과 협상',
+    run(){unflag('창고_봉쇄');},res:'가족은 재판 연기를 조건으로 열쇠를 넘겼다. 첫 공판은 다음 달로 미뤄졌다.'},
+})},
+account:{type:'청구서',spk:'외신 기자',cond:()=>has('조용한_퇴장')&&G.flags.조용한_퇴장.o!==ci(),make:()=>{
+  const o=G.flags.조용한_퇴장.o;
+  return {
+  title:'해외 계좌',
+  sit:'취재는 끝났다. 기사는 내일 아침에 나간다. 대통령궁의 답이 실릴지만 남았다.',
+  line:`${ord(o)} 정부에서 물러난 장관의 조카 명의로 스위스 계좌가 있습니다. 수사하실 겁니까?`,
+  L:{label:'수사 지시',st:{cor:-10,intl:5},fac:{광장:20,구세력:-10,재계:-10},pr:o,rep:'해외 계좌 수사',hist:'전 정부 장관의 해외 계좌를 수사했다',
+    run(){unflag('조용한_퇴장');['광장','서민','변방'].forEach(f=>mem(o,f,-20,'해외 계좌 공개'));},res:'검찰이 압수수색을 나갔다. 조카는 사흘 전에 출국했다.'},
+  R:{label:'“전임 정부의 일입니다.”',fac:{구세력:10,재계:10,광장:-20},rep:'해외 계좌 침묵',
+    run(){unflag('조용한_퇴장');},res:'기사는 1면 하단에 실렸다. 대통령궁의 답은 한 줄이었다.'},
+}}},
+fuel:{type:'청구서',spk:'민정수석',cond:()=>has('긴축'),make:()=>{
+  const o=G.flags.긴축.o;
+  return {
+  title:'연료값',
+  sit:'IMF 협약상 보조금을 되살리면 다음 분할금이 끊긴다. 버스 회사들은 요금을 올리지 않으면 내일부터 운행을 멈춘다.',
+  line:'연료값이 석 달 새 두 배가 됐습니다. 버스 기사들이 내일 파업합니다.',
+  L:{label:'보조금 일부 부활',st:{min:10,intl:-10,eco:-5},fac:{서민:20,재계:-10},pr:o!==ci()?o:null,rep:'연료 보조금 부활',
+    res:'버스는 다음 날 아침 정상 운행했다. IMF 실사단은 예정보다 일주일 일찍 왔다.'},
+  R:{label:'버틴다',st:{eco:5,min:-10},fac:{재계:10,서민:-20},rep:'연료값 방치',
+    res:'버스 노선 열한 개가 멈췄다. 그달 자전거 판매량이 세 배가 됐다.'},
+}}},
+restructure:{type:'연쇄',spk:'재무장관',cond:()=>has('지불유예'),make:()=>({
+  title:'채무 재조정',
+  sit:'거절하면 유예는 연장되지 않는다. 채권단은 다른 담보를 받지 않겠다고 했다.',
+  line:hasBase('항구')?'채권단이 원금 40% 탕감에 동의했습니다. 조건은 항구 운영권 30년입니다.':'채권단이 원금 40% 탕감에 동의했습니다. 조건은 관세청 감독권입니다.',
+  L:{label:'수락',st:{eco:15,intl:10},fac:{재계:10,구세력:-20},rep:'채무 재조정 수락',hist:'채권단에 담보를 넘기고 빚을 줄였다',
+    run(){unflag('지불유예');if(hasBase('항구')){loseBase('항구','운영권이 채권단 컨소시엄으로 넘어갔다.');return '탕감 서류에 서명한 날, 항만청 깃발이 내려갔다.';}return '탕감 서류에 서명한 날, 관세청에 외국인 감독관 여섯 명이 출근했다.';}},
+  R:{label:'거절',st:{eco:-10,intl:-10},fac:{서민:10,구세력:10,재계:-10},rep:'채무 재조정 거절',
+    run(){unflag('지불유예');},res:'협상단은 빈손으로 돌아왔다. 공항에 꽃다발이 기다리고 있었다.'},
+})},
+wrongful:{type:'청구서',spk:'민정수석',cond:()=>has('비상조치'),make:()=>({
+  title:'오인 체포',
+  sit:'재심을 열면 경찰청장이 사임하겠다고 했다. 경찰 지휘부는 모두 그의 사람이다.',
+  line:'비상조치로 구금된 사람 중 412명이 기소 없이 1년을 넘겼습니다.',
+  L:{label:'재심',st:{intl:5,min:-5},fac:{광장:20,구세력:-10,서민:-10},rep:'오인 체포 재심',
+    run(){return G.st.cor<50?'첫 주에 89명이 풀려났다. 경찰청장의 사표는 수리됐다.':'첫 주에 89명이 풀려났다. 그중 몇 명은 다음 달 다른 혐의로 다시 들어왔다.';}},
+  R:{label:'그대로 둔다',st:{intl:-5},fac:{구세력:10,광장:-20},rep:'구금 유지',
+    res:'명단은 다시 서류철에 들어갔다.'},
+})},
+strike:{type:'연쇄',spk:'재벌 회장',cond:()=>has('제철소_독점')&&!has('노조_인정')&&G.cur.fac.서민<=-20,make:()=>({
+  title:'제철소 파업',
+  sit:'용광로는 사흘 이상 식으면 다시 쓸 수 없다. 노동자들은 노조 인정 말고는 받지 않겠다고 했다.',
+  line:'용광로가 멈췄습니다. 군을 보내 주십시오. 오늘 밤 안에.',
+  L:{label:'군 투입',st:{eco:5,min:-10},fac:{군부:10,재계:10,서민:-20,광장:-20},rep:'제철소 파업 진압',hist:'제철소 파업에 군을 보냈다',
+    run(){return hasBase('노동감독청')?'새벽 네 시에 공장 문이 열렸다. 노동감독청은 부상자 31명의 명단을 공개했다.':'새벽 네 시에 공장 문이 열렸다. 부상자 수는 발표되지 않았다.';}},
+  R:{label:'중재',st:{eco:-10},fac:{서민:10,광장:10,재계:-20},rep:'제철소 파업 중재',
+    res:'회장은 처음으로 노동자 대표와 같은 탁자에 앉았다. 3번 용광로는 다시 켜지지 않았다.'},
+})},
+lawsuit:{type:'연쇄',spk:'법무장관',cond:()=>has('노조_인정'),make:()=>({
+  title:'위약금 소송',
+  sit:'1심 재판장은 회장의 대학 동기다. 합의하면 소송은 오늘 끝난다.',
+  line:'회장이 위약금으로 제철소 지분 30%를 요구하는 소송을 냈습니다.',
+  L:{label:'지분을 넘기고 합의',st:{eco:-5,cor:5},fac:{재계:20,서민:-10},rep:'위약금 합의',
+    run(){unflag('노조_인정');},res:'합의서는 오후 다섯 시에 서명됐다. 회장의 지분은 51%가 됐다.'},
+  R:{label:'끝까지 간다',st:{eco:-5,intl:5},fac:{광장:10,재계:-20},rep:'위약금 소송 응소',
+    run(){unflag('노조_인정');if(hasBase('법원'))return '2년 뒤 대법원은 노조 금지 조항을 무효로 판결했다.';st({eco:-5});return '1심은 회장의 손을 들었다. 항소장은 아직 접수 대기 중이다.';}},
+})},
+accident:{type:'청구서',spk:'민정수석',cond:()=>has('봉제공장')||hasBase('공단'),make:()=>({
+  title:'공장 사고',
+  sit:'회사는 사고 다음 날 철수를 검토한다고 통보했다. 공단 일자리 3만 개 중 1만 2천 개가 이 회사 것이다.',
+  line:'외곽 봉제공장 7층 건물이 무너졌습니다. 안에 1,100명이 있었습니다.',
+  L:{label:'회사 책임을 묻는다',st:{eco:-10,intl:5},fac:{광장:10,서민:10,재계:-20},rep:'공장 사고 책임 추궁',hist:'붕괴한 봉제공장 사장을 체포했다',
+    res:'사장은 공항에서 체포됐다. 공단 공장 두 곳이 다음 달 문을 닫았다.'},
+  R:{label:'수습 지원, 책임은 조사 후',st:{cor:5},fac:{재계:10,광장:-20,서민:-10},rep:'공장 사고 수습',
+    res:'구조는 9일 동안 이어졌다. 조사위원회 보고서는 3년 뒤에 나왔다.'},
+})},
+/* ── 숨 고르기 (검증판에서 카드 풀이 마를 때를 대비한 초안) ── */
+final:{type:'숨 고르기',spk:'체육부 장관',pool:1,w:.5,filler:1,make:()=>({
+  title:'결승전',
+  sit:'경기는 수요일 오후 세 시다. 공휴일 지정은 오늘 자정까지 관보에 실려야 한다.',
+  line:'대표팀이 결승에 올랐습니다. 그날을 공휴일로 할까요?',
+  L:{label:'공휴일',st:{min:5,eco:-3},fac:{서민:10,재계:-10},rep:'결승전 공휴일',
+    run(){return Math.random()<0.4?'대표팀은 2대 1로 이겼다. 그날 오후 공장 가동률은 11%였다.':'대표팀은 졌다. 그날 오후 공장 가동률은 11%였다.';}},
+  R:{label:'정상 근무',st:{eco:2},fac:{재계:10,서민:-10},rep:'결승전 정상 근무',
+    res:'그날 오후 세 시, 전국 공장에서 라디오 소리가 기계 소리보다 컸다.'},
+})},
+portrait:{type:'숨 고르기',spk:'공보비서관',pool:1,w:.5,filler:1,make:()=>({
+  title:'공식 초상화',
+  sit:'인쇄소는 한 장만 찍을 수 있다. 관공서 4천 곳에 다음 주까지 걸어야 한다.',
+  line:'공식 초상화입니다. 화가가 두 장을 그렸습니다.',
+  L:{label:'정장 차림, 국기 앞',fac:{구세력:10,서민:-10},rep:'정장 초상화',res:'초상화는 화요일에 걸렸다. 시장 상인회 사무실에는 걸리지 않았다.'},
+  R:{label:'셔츠 차림, 공장 앞',fac:{서민:10,구세력:-10},rep:'셔츠 초상화',res:'초상화는 화요일에 걸렸다. 대주교관에는 다음 달에야 도착했다.'},
+})},
+dinner:{type:'숨 고르기',spk:'외무장관',pool:1,w:.5,filler:1,make:()=>({
+  title:'국빈 만찬',
+  sit:'만찬은 사흘 뒤다. 수도 호텔과 북부 요리사 협회가 모두 식자재를 주문했다. 주문은 하나만 받을 수 있다.',
+  line:'이웃 나라 대통령의 국빈 만찬입니다. 메뉴를 정해 주십시오.',
+  L:{label:'북부 산악 요리',st:{intl:3},fac:{변방:10,재계:-10},rep:'만찬 북부 요리',res:'상대국 대통령은 두 번 더 달라고 했다. 수도의 호텔 셰프들은 신문에 항의 투고를 했다.'},
+  R:{label:'수도 호텔의 프랑스식',fac:{재계:10,변방:-10},rep:'만찬 프랑스식',res:'메뉴판은 프랑스어로 인쇄됐다. 북부 신문은 그 메뉴판을 1면에 실었다.'},
+})},
+/* ── 선거 · 퇴임 ── */
+count:{type:'선거',spk:'내무장관',make:(prm)=>({
+  title:'개표',
+  sit:'선관위가 없다. 개표는 내무부 소관이다.',
+  line:`세 개 주의 결과가 아직입니다. 지금까지 여당 득표율은 ${clamp(prm.score,3,97)}%입니다. 숫자는 조정할 수 있습니다.`,
+  L:{label:'조정',st:{cor:20},fac:{재계:10,광장:-20},flag:'개표_조작',rep:'개표 조정',
+    run(){G.elecWin=true;const f=G.cur.fac.광장;const p=0.15+(f<=-60?0.3:f<=-20?0.15:0)+(prm.score<40?0.2:0);G.rigged=Math.random()<p?'caught':'hidden';},
+    res:'자정 직전에 세 개 주의 결과가 들어왔다.'},
+  R:{label:'그대로 발표',rep:'개표 그대로 발표',
+    run(){G.elecWin=prm.final>=50;if(G.elecWin)return `개표는 새벽 네 시에 끝났다. 여당 ${prm.final}%.`;G.conceded=true;return `개표는 새벽 네 시에 끝났다. 여당 ${prm.final}%. 당신은 텔레비전에 나와 패배를 인정했다. 그 장면이 다음 날 모든 신문 1면에 실렸다.`;}},
+})},
+press:{type:'퇴임',spk:'외신 기자',make:(prm)=>{
+  const q=QUESTIONS[prm.k]||QUESTIONS._;
+  return {
+  title:'외신 기자',
+  sit:G.pendingEnd?`${G.pendingEnd}. 대통령궁을 떠나기 전, 마지막 질문 하나가 남았다.`:'대통령궁을 떠나기 전, 마지막 기자회견. 질문은 하나만 받는다.',
+  line:q[0],
+  L:{label:`“${q[1][0]}”`,fac:q[1][1],rep:'퇴임 회견',res:'기자회견은 그 대답으로 끝났다.'},
+  R:{label:`“${q[2][0]}”`,fac:q[2][1],rep:'퇴임 회견',res:'그 대답은 다음 날 외신 세 곳에 실렸다.'},
+}}},
+};
+
+/* ═══════════════════════ 진행 ═══════════════════════ */
+function fresh(){
+  return {v:VERSION,phase:'title',st:{min:55,eco:35,intl:45,cor:60},fog:pick([-6,-4,4,6]),stage:1,
+    bases:{곡물:{o:null,h:0},치안:{o:null,h:0},항구:{o:null,h:0}},prog:{},flags:{},once:{},queue:[],records:{},
+    half:0,turn:0,pres:[],cur:null,news:[],card:null,result:null,mode:'term',pendingEnd:null,collapses:0,
+    elec:null,lunch:null,rigged:null,elecMod:0,elecWin:false,conceded:false,transition:null};
+}
+
+function stageCheck(){
+  while(G.stage>0){const r=STAGE_REQ[G.stage-1];if(catCount(r.cat)<r.need){G.stage--;headline(`${r.cat} 기반이 무너졌다. 나라가 ${STAGES[G.stage]} 단계로 물러났다.`);}else break;}
+  if(G.stage<3){const r=STAGE_REQ[G.stage];if(catCount(r.cat)>=r.need&&G.st.eco>=r.eco&&(r.cor==null||G.st.cor<=r.cor)){G.stage++;headline(`나라가 ${STAGES[G.stage]} 단계에 들어섰다.`);}}
+}
+
+function checkCollapse(){
+  if(G.st.eco<=0)return '국가 부도';
+  if(G.st.min<=0)return '혁명';
+  if(G.st.intl<=0)return '국제 고립';
+  if(G.st.cor>=100)return '포획된 국가';
+  return null;
+}
+const COLLAPSE_HEAD = {
+  '국가 부도':'중앙은행이 외화 지급을 멈췄다. 국가 부도.',
+  '혁명':'광장의 인파가 대통령궁 담을 넘었다.',
+  '국제 고립':'마지막 대사관이 국기를 내렸다.',
+  '포획된 국가':'내각 회의록이 재벌 본사에서 먼저 나왔다.',
+};
+
+function eligible(id){const d=C[id];if(!d)return false;if(G.cur.used.includes(id))return false;return !d.cond||d.cond();}
+
+function generalPick(){
+  const p=G.cur,l2=p.spk.slice(-2),ban=(l2.length===2&&l2[0]===l2[1])?l2[0]:null;
+  let pool=Object.keys(C).filter(id=>C[id].pool&&eligible(id)&&C[id].spk!==ban);
+  if(!pool.length)pool=Object.keys(C).filter(id=>C[id].filler);
+  const w=pool.map(id=>{const d=C[id],sf=SPK[d.spk]&&SPK[d.spk].f;const s=sf?fstate(G.cur.fac[sf]):'관망';const scandal=id==='jangwan'&&G.st.cor>=70?2.5:1;return (d.w||1)*scandal*(1+(s==='적대'?1.5:s==='불만'?0.75:0));});
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<pool.length;i++){r-=w[i];if(r<=0)return pool[i];}
+  return pool[pool.length-1];
+}
+
+function draw(){
+  const p=G.cur,slot=p.slot,left=TERM_CARDS+1-slot,owe=2-p.budgets;
+  let id=null,prm=null;
+  if(G.st.eco<=20&&eligible('imf'))id='imf';
+  else if(slot===1&&p.first){id=p.first;p.first=null;}
+  else if(owe>0&&owe>=left)id='budget';
+  if(!id){
+    G.queue.sort((a,b)=>a.due-b.due);
+    for(let k=0;k<G.queue.length;k++){
+      const it=G.queue[k];if(it.due>G.turn)break;const d=C[it.id];
+      if(!d||(d.cond&&!d.cond())){G.queue.splice(k,1);k--;continue;}
+      if(p.used.includes(it.id))continue;
+      if(d.type==='청구서'&&p.bills>=4)continue;
+      id=it.id;prm=it.prm;G.queue.splice(k,1);break;
+    }
+  }
+  if(!id&&slot>=2&&p.legacy<2){const c=['lunchcut','statue'].filter(eligible);if(c.length&&Math.random()<0.5)id=pick(c);}
+  if(!id&&p.budgets<(slot>=6?2:slot>=2?1:0))id='budget';
+  if(!id&&slot>=7&&eligible('freelunch')&&(slot===TERM_CARDS||Math.random()<0.5))id='freelunch';
+  if(!id)id=generalPick();
+  if(id==='budget'&&p.lunchFund){id='lunchfund';p.lunchFund=false;}
+  showCard(id,prm);
+}
+
+function showCard(id,prm){
+  const d=C[id];
+  if(!prm&&d.prm)prm=d.prm();
+  G.card={id,prm:prm||{},heads:[]};
+  G._heads=G.card.heads;if(d.onShow)d.onShow();G._heads=null;
+  G.result=null;G.phase='play';
+  render();
+}
+
+function extremes(){
+  const out=[],f=G.cur.fac;
+  if(f.재계<=-60){st({eco:-2});out.push('자본 탈출 · 경제 -2');}
+  if(f.서민<=-60){st({min:-3});out.push('폭동 · 민심 -3');}
+  if(f.광장<=-60){st({intl:-2});out.push('외신 비판 · 국제신뢰도 -2');}
+  if(f.광장>=60){st({cor:1});out.push('언론이 실수를 덮는다 · 부패도 +1');}
+  return out;
+}
+
+function choose(side){
+  if(!G.card||G.result)return;
+  const d=C[G.card.id],card=d.make(G.card.prm),o=card[side],p=G.cur;
+  const st0={...G.st},fac0={...p.fac};
+  G._heads=[];
+  ACC={st:{},fac:{}};
+  st(o.st||{});fac(effFac(o));
+  let txt=o.run?o.run(st0):undefined;if(!txt)txt=o.res||'';
+  commit();
+  if(o.flag)setFlag(o.flag);
+  if(d.type==='청구서')p.bills++;
+  if(d.legacy)p.legacy++;
+  if(d.done)d.done();
+  const isTerm=G.mode==='term';
+  if(isTerm){p.used.push(G.card.id);p.spk.push(d.spk);}
+  const ext=isTerm?extremes():[];
+  if(isFog())G.fog=clamp(G.fog+R(-3,3),-10,10);
+  else if(G.fog){headline(`통계청이 수정치를 발표했다. 경제 실제 지수 ${G.st.eco}.`);G.fog=0;}
+  const w=FAC.reduce((s,f)=>s+Math.abs(p.fac[f]-fac0[f]),0);
+  cp().decisions.push({rep:o.rep||card.title,flag:o.flag||null,w,hist:o.hist||null,h:G.half});
+  for(const f of FAC){
+    const s0=fstate(fac0[f]),s1=fstate(p.fac[f]);
+    if(s0!==s1){headline(HEAD[f][STATE_LV[s1]>STATE_LV[s0]?1:0]);if(s1==='적대')summon(f);}
+  }
+  stageCheck();
+  G.turn++;if(isTerm){G.half++;p.slot++;}
+  const col=checkCollapse();
+  if(col&&!G.pendingEnd){G.pendingEnd=col;headline(COLLAPSE_HEAD[col]);}
+  const ch=[];
+  for(const [k,n] of STATS){const dv=G.st[k]-st0[k];if(dv)ch.push({n,d:dv,good:k==='cor'?dv<0:dv>0});}
+  const fch=FAC.filter(f=>p.fac[f]!==fac0[f]).map(f=>({f,d:p.fac[f]-fac0[f],s0:fstate(fac0[f]),s1:fstate(p.fac[f])}));
+  G.result={side,title:card.title,label:o.label,txt,ch,fch,ext,heads:G._heads,col:G.pendingEnd};
+  G._heads=null;
+  render();
+}
+
+function summon(f){
+  let best=null,bv=19;
+  G.pres.forEach((P,i)=>{if(i<ci()&&P.mem&&P.mem[f]>bv){bv=P.mem[f];best=i;}});
+  if(best!=null)headline(SUMMON[f](pn(best)));
+}
+
+function next(){
+  if(!G.result)return;
+  if(G.mode==='count'){showPress();return;}
+  if(G.mode==='press'){finishPresidency();return;}
+  if(G.pendingEnd){showPress();return;}
+  if(G.cur.slot>TERM_CARDS){startElection();return;}
+  draw();
+}
+
+function termEnd(){
+  const L=[];ACC={st:{},fac:{}};
+  const add=(why,s,f)=>{st(s||{});fac(f||{});const parts=[...Object.entries(s||{}).map(([k,v])=>`${SN[k]} ${v>0?'+':''}${v}`),...Object.entries(f||{}).map(([k,v])=>`${k} ${v>0?'+':''}${v}`)];L.push([why,parts.join(', ')]);};
+  if(hasBase('치안'))add('치안 회복',{min:3});
+  if(hasBase('항구'))add('항구',{eco:2,intl:2});
+  if(hasBase('제철소'))add('제철소',{eco:3},{재계:5});
+  if(hasBase('공단'))add('수출 공단',{eco:4,intl:2});
+  if(hasBase('법원'))add('독립 법원',{cor:-3});
+  if(hasBase('국립대학')&&ci()-G.bases.국립대학.term>=3)add('국립대학',{eco:3},{광장:5});
+  if(hasBase('급식'))add('학교 급식',null,{서민:5});
+  commit();
+  if(has('급식')&&G.half-G.flags.급식.h>=16)addBase('급식',G.flags.급식.o);
+  return L;
+}
+
+function startElection(){
+  G._heads=[];
+  const lines=termEnd();
+  const heads=G._heads;G._heads=null;
+  stageCheck();
+  const col=checkCollapse();
+  if(col){G.pendingEnd=col;headline(COLLAPSE_HEAD[col]);}
+  const opp=pick([['분열',10],['보통',0],['보통',0],['단일화',-10]]);
+  const fz=G.cur.fac.재계;
+  const parts=[['민심',G.st.min],[`야권 ${opp[0]}`,opp[1]],['재계 자금',fz>=20?5:fz<=-60?-5:0]];
+  if(G.elecMod)parts.push(['무상 급식 공약',G.elecMod]);
+  const score=parts.reduce((s,x)=>s+x[1],0);
+  G.elec={lines,heads,parts,score,final:score+R(-3,3)};
+  G.phase='election';
+  render();
+}
+function beginCount(){
+  if(G.pendingEnd){showPress();return;}
+  G.mode='count';showCard('count',{score:G.elec.score,final:G.elec.final});
+}
+function showPress(){
+  G.mode='press';
+  const ds=[...cp().decisions].sort((a,b)=>b.w-a.w);
+  const hit=ds.find(d=>d.flag&&QUESTIONS[d.flag]);
+  showCard('press',{k:hit?hit.flag:'_'});
+}
+
+function titleOf(P){
+  const m=P.mem;if(!m)return {main:null,titles:[]};
+  const titles=[];
+  FAC.forEach(f=>{if(m[f]>=50)titles.push([f,TITLES[f][0],m[f]]);else if(m[f]<=-50)titles.push([f,TITLES[f][1],m[f]]);});
+  const col=COLLAPSE.includes(P.end);
+  let main=null;
+  if(col&&m.광장>=50&&m.서민>=50)main='순교자';
+  else if(m.군부>=50&&m.재계>=50&&m.광장<=-50)main='개발 독재';
+  else if(m.서민>=50&&m.광장<=-50)main='사랑받은 독재자';
+  else if(m.광장>=50&&m.서민<=-50)main='박수받은 엘리트';
+  else if(FAC.every(f=>m[f]<=-30))main='모두가 미워한 사람';
+  else if(FAC.every(f=>Math.abs(m[f])<=30))main='그냥 그런 대통령';
+  else if(titles.length)main=[...titles].sort((a,b)=>Math.abs(b[2])-Math.abs(a[2]))[0][1];
+  return {main,titles};
+}
+function histLine(P){
+  const hs=P.decisions.filter(d=>d.hist).sort((a,b)=>b.w-a.w).slice(0,2).sort((a,b)=>a.h-b.h).map(d=>d.hist);
+  if(COLLAPSE.includes(P.end))hs.push(`${P.end}로 물러났다`);
+  if(!hs.length)return null;
+  return hs.map((h,i)=>i<hs.length-1?h.replace(/다$/,'고'):h).join(', ')+'.';
+}
+
+function finishPresidency(){
+  const P=cp();
+  P.end=G.pendingEnd||(G.elecWin?'임기 만료':'선거 패배');
+  P.h1=G.half;
+  P.mem={...G.cur.fac};
+  if(G.conceded){P.mem.광장=clamp(P.mem.광장+20,-100,100);P.notes.push('패배 인정 · 광장 +20');}
+  G.pres.forEach((Q,i)=>{if(i<ci()&&Q.mem)FAC.forEach(f=>{Q.mem[f]=Math.round(Q.mem[f]*0.8);});});
+  P.top=[...P.decisions].filter(d=>d.rep!=='퇴임 회견').sort((a,b)=>b.w-a.w).slice(0,3).map(d=>d.rep);
+  P.line=histLine(P);
+  if(G.pendingEnd)G.collapses++;else G.collapses=0;
+  G.card=null;G.result=null;
+  G.phase='legacy';
+  render();
+}
+
+function failed(){return G.collapses>=3||['곡물','치안','통화'].every(k=>!hasBase(k));}
+
+function toGallery(){G.phase='gallery';render();}
+function afterGallery(){
+  G.pres.forEach(P=>{P.shown=titleOf(P).main||'—';});
+  if(G.pres.length>=PRESIDENTS||failed()){G.phase='final';render();return;}
+  prepTransition();G.phase='name';render();
+}
+
+function prepTransition(){
+  const prev=G.pres[G.pres.length-1];
+  const T={end:prev?prev.end:null,lines:[]};
+  if(!prev){G.transition=T;return;}
+  const map={
+    '임기 만료':['즉시 변화 없음','새 대통령의 세력은 모두 관망에서 시작','첫 카드: [계승]'],
+    '선거 패배':['즉시 변화 없음','새 대통령의 세력은 모두 관망에서 시작','첫 카드: [계승]'],
+    '국가 부도':['경제 15로, 통화 안정 기반 상실','재계 불만에서 시작','첫 카드: [IMF] 강제'],
+    '혁명':['민심 60으로, 경제 -15','광장·서민 호의, 재계 적대에서 시작'],
+    '국제 고립':['국제신뢰도 10으로','구세력 호의에서 시작'],
+    '포획된 국가':['부패도 80으로','재계 열광, 광장 적대에서 시작'],
+  };
+  T.lines=map[prev.end]||[];
+  G.transition=T;
+}
+
+function startPresidency(name,gender){
+  const prev=G.pres[G.pres.length-1];
+  G.pres.push({name,g:gender,h0:G.half,decisions:[],built:[],notes:[],statue:null});
+  const fac0=prev?up(FAC,0):{...ARANDO_FAC};
+  let first=null,lunchFund=false;
+  G._heads=[];
+  G.cur={fac:fac0,slot:1,used:[],budgets:0,bills:0,legacy:0,first:null,spk:[],lunchFund:false};
+  if(prev){
+    switch(prev.end){
+      case '임기 만료':case '선거 패배':first='succession';break;
+      case '국가 부도':G.st.eco=15;if(hasBase('통화'))loseBase('통화','외환 보유고가 바닥났다.');fac0.재계=-40;first='imf';revealFraud();break;
+      case '혁명':G.st.min=60;G.st.eco=clamp(G.st.eco-15,0,100);if(G.st.eco<=0)G.st.eco=5;fac0.광장=30;fac0.서민=30;fac0.재계=-70;revealFraud();break;
+      case '국제 고립':G.st.intl=10;fac0.구세력=30;revealFraud();break;
+      case '포획된 국가':G.st.cor=80;fac0.재계=70;fac0.광장=-70;revealFraud();break;
+    }
+    if(G.rigged==='caught'&&has('개표_조작')){
+      const o=G.flags.개표_조작.o;st({intl:-15,min:-10});mem(o,'광장',-20,'개표 원본 공개');mem(o,'서민',-10,'개표 원본 공개');
+      headline(`선관위가 없던 ${yearOf(G.flags.개표_조작.h)}년의 개표 원본이 공개됐다. 세 개 주의 숫자가 달랐다.`);unflag('개표_조작');
+    }
+    if(G.lunch==='ours'||(G.lunch==='theirs'&&prev.end==='선거 패배'))lunchFund=true;
+    else unflag('급식_공약');
+  }
+  G.cur.first=first;G.cur.lunchFund=lunchFund;
+  G.lunch=null;G.elecMod=0;G.elecWin=false;G.conceded=false;G.pendingEnd=null;G.mode='term';G.rigged=G.rigged==='hidden'?'hidden':null;G.elec=null;
+  const add=(id,a,b)=>G.queue.push({id,due:G.turn+R(a,b),prm:null});
+  if(has('제철소_독점')&&!has('노조_인정')&&Math.random()<0.6)add('union',1,5);
+  if(has('봉제공장')){let pr=10+G.st.cor/2;if(hasBase('노동감독청'))pr/=2;if(Math.random()*100<pr)add('accident',1,6);}
+  if(has('비상조치')&&Math.random()<0.5)add('wrongful',1,6);
+  if(has('조용한_퇴장')&&G.flags.조용한_퇴장.o!==ci())add('account',1,4);
+  if(has('긴축')&&Math.random()<0.4)add('fuel',1,6);
+  stageCheck();
+  const startHeads=G._heads;G._heads=null;
+  draw();
+  if(G.card)G.card.heads=[...startHeads,...G.card.heads];
+  render();
+}
+
+/* ═══════════════════════ 화면 ═══════════════════════ */
+const HAS_DOM=typeof document!=='undefined';
+const $app=HAS_DOM?document.getElementById('app'):null;
+
+function save(){try{if(G&&G.phase!=='title')localStorage.setItem(SAVE_KEY,JSON.stringify(G));}catch(e){}}
+function loadSave(){try{const s=localStorage.getItem(SAVE_KEY);if(!s)return null;const g=JSON.parse(s);return g&&g.v===VERSION?g:null;}catch(e){return null;}}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+
+function portrait(i,cls='portrait'){
+  const P=G.pres[i];const f=P&&P.g==='여';
+  const hair=f?'<path d="M22 46c0-20 12-30 28-30s28 10 28 30v26c-5-4-8-12-8-22-6 4-14 6-20 6s-14-2-20-6c0 10-3 18-8 22z" fill="var(--ink)"/>'
+             :'<path d="M26 44c0-17 10-27 24-27s24 10 24 27c-4-7-12-11-24-11s-20 4-24 11z" fill="var(--ink)"/>';
+  return `<svg class="${cls}" viewBox="0 0 100 125" aria-hidden="true"><rect x="1" y="1" width="98" height="123" fill="var(--wash)" stroke="var(--rule)" stroke-width="2"/><path d="M14 125c2-24 16-36 36-36s34 12 36 36z" fill="var(--muted)"/><path d="M42 86h16l-8 22z" fill="var(--sheet)"/><ellipse cx="50" cy="52" rx="20" ry="25" fill="var(--sheet)" stroke="var(--muted)" stroke-width="1.5"/>${hair}<text x="50" y="119" text-anchor="middle" font-family="Hahmlet,serif" font-weight="800" font-size="11" fill="var(--sheet)">${i+1}</text></svg>`;
+}
+
+function arrows(v,step){const n=Math.max(1,Math.round(Math.abs(v)/step));return (v>0?'▲':'▼').repeat(Math.min(n,4));}
+function fxHTML(o){
+  const out=[];
+  for(const [k,n] of STATS){const v=o.st&&o.st[k];if(!v)continue;const good=k==='cor'?v<0:v>0;const a=(v>0?'▲':'▼').repeat(Math.abs(v)<=7?1:Math.abs(v)<=15?2:3);out.push(`<span class="fx ${good?'g':'b'}">${n} ${a}</span>`);}
+  const ef=effFac(o);let amp=false;
+  for(const f of FAC){const v=ef[f];if(!v)continue;if(v!==((o.fac||{})[f]||0))amp=true;out.push(`<span class="fx ${v>0?'g':'b'}">${f} ${arrows(v,10)}</span>`);}
+  if(o.base)out.push(`<span class="fx base">기반 · ${BASES[o.base].n}${o.baseProg?` ${o.baseProg}/2`:''}</span>`);
+  if(o.elec)out.push(`<span class="fx el">선거 ${o.elec>0?'+':''}${o.elec}</span>`);
+  if(amp)out.push(`<span class="fx pr">계승 압력 · ${ord(o.pr)}</span>`);
+  return out.join('');
+}
+
+function headerHTML(){
+  const P=cp();
+  const slot=G.mode==='term'?`결재 ${Math.min(G.cur.slot,TERM_CARDS)}/${TERM_CARDS}`:(G.mode==='count'?'선거':'퇴임');
+  return `<header class="bar"><span class="seal-title">國家</span><span class="meta"><span>아란도 공화국</span><b>${dateLabel()}</b><span>${ord(ci())} ${esc(P.name)}</span><span>${slot}</span></span></header>`;
+}
+function vitalsHTML(){
+  const inds=STATS.map(([k,n])=>{
+    const v=k==='eco'?ecoShown():G.st[k];const fog=k==='eco'&&isFog();
+    const danger=k==='cor'?v>=80:v<=20;
+    return `<div class="ind ${danger?'danger':''} ${fog?'fog':''}"><div class="top"><span>${n}</span><span class="num">${v}${fog?'<span class="q" title="부패도 60 이상: 보고 수치가 실제와 최대 ±10 다를 수 있다">?</span>':''}</span></div><div class="track"><i style="width:${v}%"></i></div>${fog?'<div class="why">보고치 · 부패로 흐림</div>':''}</div>`;
+  }).join('');
+  const facs=FAC.map(f=>{const v=G.cur.fac[f],s=fstate(v),lv=STATE_LV[s];
+    return `<li class="fac s-${s}" title="${esc(f+': '+FAC_WHO[f])}"><span class="sg">${FAC_GLYPH[f]}</span><span class="nm">${f}</span><span class="sw">${s}</span><span class="pips">${[0,1,2,3,4].map(x=>`<i class="${x<=lv?'on':''}"></i>`).join('')}</span></li>`;}).join('');
+  return `<section class="vitals"><div class="panel"><h3>지표</h3><div class="inds">${inds}</div></div><div class="panel"><h3>세력 · 지금 대통령을 보는 눈</h3><ul class="facs">${facs}</ul></div></section>`;
+}
+function ledgerHTML(){
+  const steps=STAGES.map((s,i)=>`<span class="${i===G.stage?'on':i<G.stage?'done':''}">${s}</span>`).join('');
+  let req='';
+  if(G.stage<3){const r=STAGE_REQ[G.stage];req=`다음 단계: ${r.cat} 기반 ${catCount(r.cat)}/${CAT_TOTAL[r.cat]} (필요 ${r.need}) · 경제 ${r.eco}↑${r.cor?` · 부패도 ${r.cor}↓`:''}`;}
+  const bl=Object.keys(G.bases).filter(k=>BASES[k]).map(k=>{const b=G.bases[k];return `<li title="${esc(BASES[k].fx)}"><span><span class="cat">${BASES[k].cat}</span>${BASES[k].n}</span><span class="own">${b.o!=null&&G.pres[b.o]?`${ord(b.o)} ${esc(G.pres[b.o].name)}`:'이전 정부'}</span></li>`;}).join('');
+  const pl=Object.keys(G.prog).map(k=>`<li class="prog"><span><span class="cat">공사</span>${BASES[k].n}</span><span class="own">${G.prog[k]}/2</span></li>`).join('');
+  const FL={창고_봉쇄:'창고 봉쇄',조용한_퇴장:'장관의 조용한 퇴장',긴축:'IMF 긴축',지불유예:'지불 유예',비상조치:'비상조치',법대로:'법대로',제철소_독점:'제철소 독점',봉제공장:'12시간 근무',급식_공약:'급식 공약',급식:'무상 급식',노조_인정:'제철소 노조'};
+  const fl=Object.keys(G.flags).filter(k=>FL[k]).map(k=>`<span>${FL[k]}</span>`).join('');
+  const prev=G.pres.slice(0,-1).map((P,i)=>{const t=titleOf(P).main;return `<li>${portrait(i)}<div><div class="t">${ord(i)} ${esc(P.name)}</div><div class="s">${t?esc(t):'그런 대통령도 있었지.'}</div></div></li>`;}).join('');
+  return `<section class="ledger"><div class="panel"><h3>나라</h3><div class="stage-line">${STAGES[G.stage]} 단계</div><div class="stage-steps">${steps}</div><div class="next-req">${req}</div><ul class="bases">${bl}${pl}</ul>${fl?`<div class="flags" title="나라에 남은 결정들">${fl}</div>`:''}</div>${prev?`<div class="panel"><h3>역대 대통령</h3><ul class="prez">${prev}</ul></div>`:''}</section>`;
+}
+function wireHTML(){
+  const items=G.news.slice(0,3);
+  if(!items.length)return `<div class="wire" aria-live="polite"><span class="empty">헤드라인 없음. 세력의 태도가 바뀌면 여기에 뜬다.</span></div>`;
+  return `<div class="wire" aria-live="polite">${items.map(n=>`<p><span class="d">${n.t}</span><span>${esc(n.h)}</span></p>`).join('')}</div>`;
+}
+function speakerHTML(name,line){
+  const s=SPK[name]||{g:'?'};const mood=s.m||MOOD[s.f?fstate(G.cur.fac[s.f]):'관망'];
+  const recs=(G.records[name]||[]).slice(-2);
+  return `<div class="speaker"><div class="sg">${s.g}</div><div><div class="who"><b>${name}</b> <i>(${mood})</i></div><blockquote>“${esc(line)}”</blockquote>${recs.length?`<div class="rec">${recs.map(r=>`<span>기록: ${esc(r)}</span>`).join('')}</div>`:''}</div></div>`;
+}
+function cardHTML(){
+  const d=C[G.card.id],c=d.make(G.card.prm);
+  const speakers=c.dual?c.dual.map(([n,l])=>speakerHTML(n,l)).join(''):speakerHTML(d.spk,c.line);
+  const opt=(side,o)=>`<button class="opt" data-side="${side}" id="opt-${side}"><span class="k">${side==='L'?'← 왼쪽':'오른쪽 →'}</span><span class="lab">${esc(o.label)}</span><span class="fxs">${fxHTML(o)}</span></button>`;
+  return `<article class="memo"><div class="memo-head"><span class="lbl">대통령 비서실 · 보고 No. ${String(G.turn+1).padStart(4,'0')}</span><span class="stamp">${d.type}</span></div><h2>${esc(c.title)}</h2><p class="sit"><b>상황</b>${esc(c.sit)}</p>${speakers}<div class="choices">${opt('L',c.L)}${opt('R',c.R)}</div></article>`;
+}
+function resultHTML(){
+  const r=G.result,d=C[G.card.id];
+  const ch=r.ch.map(x=>`<li class="${x.good?'g':'b'}">${x.n} <b>${x.d>0?'+':''}${x.d}</b></li>`).join('')+r.fch.map(x=>`<li class="${x.d>0?'g':'b'}">${x.f} <b>${arrows(x.d,10)}</b>${x.s0!==x.s1?` ${x.s0} → ${x.s1}`:''}</li>`).join('');
+  const nextLbl=G.mode==='press'?'유산 기록으로':(G.mode==='count'?'마지막 기자회견':(r.col?'퇴임':(G.cur.slot>TERM_CARDS?'임기 정산과 선거':'다음 보고')));
+  return `<article class="memo result"><div class="memo-head"><span class="lbl">${esc(r.title)} · 처리 완료</span><span class="stamp">${d.type}</span></div><div class="chosen"><span class="big-stamp">裁可</span><span class="lab">${esc(r.label)}</span></div><p class="txt">${esc(r.txt)}</p>${ch?`<ul class="changes">${ch}</ul>`:''}${r.ext.length?`<p class="ext">세력 압력: ${r.ext.map(esc).join(' / ')}</p>`:''}${r.heads.length?`<div class="heads">${r.heads.map(h=>`<p>${esc(h)}</p>`).join('')}</div>`:''}${r.col&&G.mode==='term'?`<p class="collapse-note">몰락: ${r.col}. 대통령은 여기서 끝난다. 나라는 다음 대통령에게 넘어간다.</p>`:''}<div class="nextrow"><button class="btn" id="next">${nextLbl} →</button></div></article>`;
+}
+function electionHTML(){
+  const e=G.elec;
+  const tl=e.lines.length?`<table class="tbl">${e.lines.map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>`:'<p>정산할 기반 효과가 없다.</p>';
+  const sc=`<table class="tbl">${e.parts.map(([a,b])=>`<tr><td>${a}</td><td>${b>0&&a!=='민심'?'+':''}${b}</td></tr>`).join('')}<tr class="sum"><td>선거 점수 (50 이상이면 여당 승리)</td><td>${e.score}</td></tr></table>`;
+  return `<article class="memo"><div class="memo-head"><span class="lbl">임기 4년 · ${dateLabel()}</span><span class="stamp">선거</span></div><h2>임기 정산</h2><p class="sit"><b>기반</b>나라에 남은 것들이 이번 임기의 몫을 냈다.</p>${tl}${e.heads.length?`<div class="heads">${e.heads.map(h=>`<p>${esc(h)}</p>`).join('')}</div>`:''}<h2 style="margin-top:18px">선거</h2><p class="sit"><b>규칙</b>검증판에는 재선이 없다. 여당 후보가 이기면 임기 만료, 지면 선거 패배로 기록된다. 선관위가 없어 개표는 내무부가 한다.</p>${sc}<div class="nextrow"><button class="btn" id="tocount">${G.pendingEnd?'퇴임':'개표 상황실로'} →</button></div></article>`;
+}
+function playHTML(){
+  let main;
+  if(G.phase==='election')main=electionHTML();
+  else if(G.result)main=resultHTML();
+  else{const hs=G.card.heads||[];main=(hs.length?`<div class="heads">${hs.map(h=>`<p>${esc(h)}</p>`).join('')}</div>`:'')+cardHTML();}
+  return headerHTML()+`<div class="desk">${vitalsHTML()}<main class="main">${wireHTML()}${main}</main>${ledgerHTML()}</div>`;
+}
+
+function titleHTML(){
+  const s=loadSave();const canCont=s&&!['title','final'].includes(s.phase);
+  return `<div class="screen"><div class="title-hero"><div class="hanja">國家</div><div class="ko">국 가</div><p class="thesis">대통령은 길어야 8년. 나라는 남는다.</p></div>
+  <ul class="howto"><li>대통령을 차례로 맡아 한 나라를 이어 간다. 결재 서류마다 둘 중 하나를 고른다.</li><li>지표는 숫자로, 세력은 단어로만 보인다. 부패가 심하면 경제 수치마저 흐려진다.</li><li>한 대통령의 결정은 다음 대통령의 현실이 되고, 사람들의 기억은 짐이 되거나 무기가 된다.</li></ul>
+  <p class="build-note">검증판 · 아란도 공화국(산업화 단계에서 시작) · 대통령 세 명 · 임기당 결재 여덟 장 · 키보드 ← → 로도 고를 수 있다.</p>
+  <div class="row"><button class="btn" id="newgame">새 나라 시작</button>${canCont?'<button class="btn ghost" id="cont">이어 하기</button>':''}</div></div>`;
+}
+function nameHTML(){
+  const idx=G.pres.length;const T=G.transition||{lines:[]};const prev=G.pres[idx-1];
+  const g0=pick(['남','여']);
+  const intro=idx===0?`<div class="notice"><b>아란도 공화국</b><span>한때 대륙의 곡창지대였으나 포퓰리즘 정권이 수십 년간 이어지며 만성 재정 적자에 시달리는 나라. 국민들은 “예전엔 잘 살았는데”를 입버릇처럼 달고 산다.</span><ul><li>민심 55 · 경제 35 · 국제신뢰도 45 · 부패도 60</li><li>산업화 단계 (간신히) · 기반: 곡물 비축망, 치안 회복, 항구</li><li>서민·구세력 호의, 나머지 관망</li></ul></div>`
+    :`<div class="notice"><b>교체 방식: ${esc(prev.end)}</b><ul>${T.lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul></div>`;
+  return `<div class="screen"><div><span class="lbl">${dateLabel()} · 취임 선서</span><h1 style="font-size:clamp(30px,6vw,44px)">${ord(idx)} 대통령</h1></div>${intro}
+  <form class="sheet" id="nameform" style="display:grid;gap:14px"><div class="field"><label class="lbl" for="pname">이름</label><input type="text" id="pname" maxlength="16" value="${esc(pick(NAMES[g0]))}" autocomplete="off"></div>
+  <div class="field"><span class="lbl">성별</span><div class="gender"><label><input type="radio" name="pg" id="pg-m" value="남" ${g0==='남'?'checked':''}><span>남</span></label><label><input type="radio" name="pg" id="pg-f" value="여" ${g0==='여'?'checked':''}><span>여</span></label></div></div>
+  <div class="row"><button type="submit" class="btn">취임</button><button type="button" class="btn ghost" id="rname">무작위</button></div></form></div>`;
+}
+function memBars(m){return `<div class="memgrid">${FAC.map(f=>{const v=m[f];const w=Math.abs(v)/2;return `<div class="mem"><span>${f}</span><span class="bar2"><i class="${v>=0?'p':'n'}" style="width:${w}%"></i></span></div>`;}).join('')}</div>`;}
+function legacyHTML(){
+  const i=ci(),P=G.pres[i],t=titleOf(P);
+  const built=P.built.map(k=>BASES[k].n);
+  return `<div class="screen"><span class="lbl">유산 카드 · ${yearOf(P.h0)}–${yearOf(P.h1)}</span><div class="sheet legacy">${portrait(i)}<div style="min-width:0;display:grid;gap:10px">
+  <div><h1 style="font-size:clamp(24px,4.4vw,32px)">${ord(i)} 대통령 ${esc(P.name)}</h1><span class="lbl">끝난 방식 · ${esc(P.end)}</span></div>
+  <div><div class="ttl-main">${t.main?esc(t.main):'그런 대통령도 있었지.'}</div>${t.titles.length?`<div class="ttl-sub">${t.titles.map(([f,n])=>`<span><b>${f}</b>${n}</span>`).join('')}</div>`:''}</div>
+  <div><span class="lbl">세력별 기억 · 퇴임 순간의 태도</span>${memBars(P.mem)}</div>
+  ${P.top.length?`<div><span class="lbl">대표 결정</span><ol class="decs">${P.top.map(r=>`<li>${esc(r)}</li>`).join('')}</ol></div>`:''}
+  <div><span class="lbl">만든 기반</span><p style="margin:2px 0 0">${built.length?built.map(esc).join(', '):'없음'}</p></div>
+  ${P.line?`<p class="textbook">교과서: ${ord(i)} 대통령 ${esc(P.name)}은 ${esc(P.line)}</p>`:''}
+  </div></div><p class="build-note">기억은 고정되지 않는다. 대통령이 바뀔 때마다 흐려지고(×0.8), 나중의 사건이 다시 쓴다.</p><div class="row"><button class="btn" id="togallery">역대 대통령 →</button></div></div>`;
+}
+function galleryCards(){
+  return G.pres.map((P,i)=>{const t=titleOf(P),now=t.main||'—';
+    const chg=P.shown&&P.shown!==now?`<div class="chg">칭호 변경: ${esc(P.shown)} → ${esc(now)}</div>`:'';
+    const stt=P.statue?`<div class="statue">동상: ${P.statue==='removed'?'철거됨':'서 있음'}${P.removed?` · 철거 ${P.removed}회`:''}${P.rebuilt?` · 재건립 ${P.rebuilt}회`:''}</div>`:'';
+    return `<div class="gcard">${portrait(i)}<div class="nm">${ord(i)} ${esc(P.name)}</div><div class="yrs">${yearOf(P.h0)}–${yearOf(P.h1)} · ${esc(P.end)}</div><div class="tt">${t.main?esc(t.main):'그런 대통령도 있었지.'}</div>${t.titles.length?`<div class="ttl-sub">${t.titles.map(([f,n])=>`<span><b>${f}</b>${n}</span>`).join('')}</div>`:''}${chg}${stt}${memBars(P.mem)}${P.notes.length?`<ul class="notes">${P.notes.slice(-3).map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`:''}</div>`;}).join('');
+}
+function galleryHTML(){
+  const last=G.pres.length>=PRESIDENTS||failed();
+  return `<div class="screen" style="max-width:1000px"><div><span class="lbl">${dateLabel()} · 초상화 복도</span><h1 style="font-size:clamp(28px,5vw,40px)">역대 대통령</h1></div><p class="build-note">칭호는 지금의 기억으로 붙는다. 재평가가 일어나면 바뀐다.</p><div class="gallery">${galleryCards()}</div><div class="row"><button class="btn" id="aftergallery">${last?'나라의 기록':'다음 대통령 취임'} →</button></div></div>`;
+}
+function countryText(){
+  const s=['아란도 공화국.'];
+  G.pres.forEach((P,i)=>{if(P.line)s.push(`${ord(i)} 때 ${P.line}`);});
+  G.pres.forEach((P,i)=>{if(P.removed||P.rebuilt){const a=[];if(P.removed)a.push(`${P.removed===1?'한':'두'} 번 철거되고`);if(P.rebuilt)a.push(`${P.rebuilt===1?'한':'두'} 번 다시 섰다`);else a[a.length-1]=a[a.length-1].replace(/되고$/,'됐다');s.push(`${ord(i)} 대통령의 동상은 ${a.join(' ')}.`);}});
+  if(has('분식'))s.push(`${yearOf(G.flags.분식.h)}년의 성장률 6%는 끝내 정정되지 않았다.`);
+  if(has('개표_조작'))s.push(`${yearOf(G.flags.개표_조작.h)}년 세 개 주의 개표 원본은 아직 공개되지 않았다.`);
+  if(has('급식'))s.push(`무상 급식은 ${Math.floor((G.half-G.flags.급식.h)/2)}년째 이어지고 있다.`);
+  if(failed())s.push('그리고 나라는 더 버티지 못했다.');
+  else s.push(`${yearOf(G.half)}년, 나라는 ${STAGES[G.stage]} 단계에 있었다.`);
+  return s.join(' ');
+}
+function logText(){
+  const L=[`국가 검증판 · 아란도 공화국 · ${START_YEAR}–${yearOf(G.half)}`,`최종: ${failed()?'실패 국가':STAGES[G.stage]+' 단계 ('+STAGE_NICK[G.stage]+')'} · 민심 ${G.st.min} 경제 ${G.st.eco} 국제 ${G.st.intl} 부패 ${G.st.cor}`,`기반: ${Object.keys(G.bases).filter(k=>BASES[k]).map(k=>BASES[k].n).join(', ')}`,''];
+  G.pres.forEach((P,i)=>{const t=titleOf(P);L.push(`${ord(i)} ${P.name} (${yearOf(P.h0)}–${yearOf(P.h1)}, ${P.end})`);L.push(`  칭호: ${t.main||'없음'}${t.titles.length?' | '+t.titles.map(x=>x[0]+': '+x[1]).join(', '):''}`);L.push(`  기억: ${FAC.map(f=>f+' '+P.mem[f]).join(' / ')}`);L.push(`  대표 결정: ${P.top.join(', ')||'없음'}`);if(P.notes.length)L.push(`  재평가: ${P.notes.join(' / ')}`);});
+  L.push('',`칭호 조합: ${G.pres.map(P=>titleOf(P).main||'—').join(' · ')}`);
+  return L.join('\n');
+}
+function finalHTML(){
+  const nick=failed()?'실패 국가':STAGE_NICK[G.stage];
+  return `<div class="screen" style="max-width:1000px"><div><span class="lbl">${START_YEAR}–${yearOf(G.half)} · 나라의 끝</span><div class="final-stage">${nick}</div></div>
+  <p class="textbook">${esc(countryText())}</p><div class="gallery">${galleryCards()}</div>
+  <details><summary>검증 기록 (플레이테스트용)</summary><pre class="logbox" id="logbox">${esc(logText())}</pre><button class="btn ghost" id="copylog">기록 복사</button></details>
+  <div class="row"><button class="btn" id="restart">새 나라 시작</button></div></div>`;
+}
+
+function render(){
+  if(!HAS_DOM)return;
+  save();
+  const ph=G.phase;
+  let h='';
+  if(ph==='title')h=titleHTML();
+  else if(ph==='name')h=nameHTML();
+  else if(ph==='play'||ph==='election')h=playHTML();
+  else if(ph==='legacy')h=legacyHTML();
+  else if(ph==='gallery')h=galleryHTML();
+  else if(ph==='final')h=finalHTML();
+  $app.innerHTML=h;
+  bind();
+  const f=document.getElementById('next')||document.getElementById('opt-L');
+  if(f&&document.activeElement===document.body)try{f.focus({preventScroll:true});}catch(e){}
+}
+function bind(){
+  const on=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',fn);};
+  on('newgame',()=>{clearSave();G=fresh();prepTransition();G.phase='name';render();});
+  on('cont',()=>{const s=loadSave();if(s){G=s;render();}});
+  document.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>choose(b.dataset.side)));
+  on('next',()=>{next();window.scrollTo({top:0});});
+  on('tocount',()=>{beginCount();});
+  on('togallery',()=>{toGallery();window.scrollTo({top:0});});
+  on('aftergallery',()=>{afterGallery();window.scrollTo({top:0});});
+  on('restart',()=>{clearSave();G=fresh();render();});
+  on('rname',()=>{const g=document.querySelector('input[name=pg]:checked');const v=g?g.value:'남';document.getElementById('pname').value=pick(NAMES[v]);});
+  document.querySelectorAll('input[name=pg]').forEach(r=>r.addEventListener('change',()=>{document.getElementById('pname').value=pick(NAMES[r.value]);}));
+  const form=document.getElementById('nameform');
+  if(form)form.addEventListener('submit',e=>{e.preventDefault();const n=document.getElementById('pname').value.trim()||pick(NAMES.남);const g=(document.querySelector('input[name=pg]:checked')||{}).value||'남';startPresidency(n,g);window.scrollTo({top:0});});
+  on('copylog',()=>{const t=logText();const box=document.getElementById('logbox');const sel=()=>{const r=document.createRange();r.selectNodeContents(box);const s=getSelection();s.removeAllRanges();s.addRange(r);};
+    try{navigator.clipboard.writeText(t).then(()=>{document.getElementById('copylog').textContent='복사됨';},sel);}catch(e){sel();}});
+}
+if(HAS_DOM){
+  document.addEventListener('keydown',e=>{
+    if(!G||e.target.tagName==='INPUT')return;
+    if(G.phase==='play'&&!G.result){if(e.key==='ArrowLeft'){e.preventDefault();choose('L');}else if(e.key==='ArrowRight'){e.preventDefault();choose('R');}}
+  });
+  const start=(data)=>{G=(data&&data.G&&data.G.v===VERSION)?data.G:fresh();render();};
+  try{window.claude?.hot?.snapshot?.(()=>({G}));}catch(e){}
+  window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+}
+</script>
