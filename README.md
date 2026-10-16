@@ -86,3 +86,6 @@ README_KO.md          original Korean README with the card list and spec deviati
 
 I wrote the game design (`docs/scenario_v3.md`). The implementation was built
 with an AI coding assistant from that design.
+
+## Copyright
+Copyright (c) 2026 Katherine Nahm (남의진). All rights reserved. See [LICENSE](LICENSE).
